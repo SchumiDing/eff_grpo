@@ -259,16 +259,54 @@ def run_sample_step(
                     )[0]
                 pred[infer_mask] = v_infer.to(pred.dtype)
                 
-                # 计算推理样本的预测终点 x_L
+                # 计算推理样本的预测终点 x_L_infer
                 x_L_infer = z[infer_mask].to(torch.float32) + v_infer.to(torch.float32) * d_sigma
-                x_L_mean = x_L_infer.mean(dim=0, keepdim=True)
+                
+                # --- 修改部分：按组计算 Masked Mean ---
+                num_generations = args.num_generations
+                num_groups = B // num_generations
+                
+                # 初始化 x_L_mean 容器 (B, C, H, W)
+                x_L_mean = torch.zeros((B,) + z.shape[1:], device=z.device, dtype=torch.float32)
+                
+                # 遍历每个组，只对该组内 infer_mask 为 True 的样本求均值
+                for g in range(num_groups):
+                    start_idx = g * num_generations
+                    end_idx = (g + 1) * num_generations
+                    
+                    # 获取该组的 mask 和预测终点
+                    group_infer_mask = infer_mask[start_idx:end_idx]
+                    
+                    if group_infer_mask.any():
+                        # 找到该组内属于 infer 分支的样本索引
+                        # 注意这里的索引是相对于整个 Batch 的
+                        current_group_infer_indices = torch.where(infer_mask)[0]
+                        # 进一步筛选出属于当前组 g 的索引
+                        current_g_infer_indices = current_group_infer_indices[
+                            (current_group_infer_indices >= start_idx) & (current_group_infer_indices < end_idx)
+                        ]
+                        
+                        # 计算该组内 infer 样本的均值
+                        # 注意：v_infer 的顺序对应 infer_mask 为 True 的顺序
+                        # 我们直接从 x_L_infer 中提取对应部分计算更方便
+                        # 找到 x_L_infer 中属于当前组的部分
+                        # 统计在当前组之前有多少个 infer 样本
+                        offset = infer_mask[:start_idx].sum().item()
+                        count = group_infer_mask.sum().item()
+                        
+                        group_x_L_mean = x_L_infer[offset : offset + count].mean(dim=0)
+                        x_L_mean[start_idx:end_idx] = group_x_L_mean
+                    else:
+                        # 如果整个组都没有 infer（理论上不应发生），退而求其次用 z 的均值
+                        x_L_mean[start_idx:end_idx] = z[start_idx:end_idx].to(torch.float32).mean(dim=0)
             else:
-                x_L_mean = z.to(torch.float32).mean(dim=0, keepdim=True)
+                x_L_mean = z.to(torch.float32).mean(dim=0, keepdim=True).expand(B, *z.shape[1:])
 
             # 预测分支
             if guessed_mask.any():
                 # v_hat = (x_L_mean - x_t) / (0 - sigma)
-                v_guess = (x_L_mean - z[guessed_mask].to(torch.float32)) / (d_sigma if abs(d_sigma) > 1e-6 else 1e-6)
+                # 这里的 x_L_mean 已经是按组对应的了
+                v_guess = (x_L_mean[guessed_mask] - z[guessed_mask].to(torch.float32)) / (d_sigma if abs(d_sigma) > 1e-6 else 1e-6)
                 pred[guessed_mask] = v_guess.to(pred.dtype)
             
             # 演进
