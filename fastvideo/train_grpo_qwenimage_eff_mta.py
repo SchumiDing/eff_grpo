@@ -225,6 +225,9 @@ def run_sample_step(
         last_step_guessed_mask = torch.zeros(B, device=z.device, dtype=torch.bool)
         # 跟踪每个rollout累计被guess的次数
         cumulative_guess_count = torch.zeros(B, device=z.device, dtype=torch.long)
+        # 存储上一轮每个rollout的速度（用于动量）
+        prev_velocities = torch.zeros_like(z, dtype=torch.float32)
+        momentum_weight = 0.5
         
         for i in progress_bar:  # Add progress bar
             sigma = sigma_schedule[i]
@@ -285,6 +288,9 @@ def run_sample_step(
                 v_full = torch.zeros_like(z, dtype=torch.float32)
                 v_full[infer_mask] = v_infer.to(torch.float32)
                 
+                # 更新推理样本的速度记录（用于下一轮动量）
+                prev_velocities[infer_mask] = v_infer.to(torch.float32)
+                
                 # --- 按rollout维度计算每个sample的平均速度场 ---
                 # 初始化平均速度场容器 (B, ...)
                 v_mean = torch.zeros_like(z, dtype=torch.float32)
@@ -320,7 +326,14 @@ def run_sample_step(
                 # v_hat = (x_L_mean - x_t) / (0 - sigma)
                 # 这里的 x_L_mean 已经是按组对应的了
                 v_guess = (x_L_mean[guessed_mask] - z[guessed_mask].to(torch.float32)) / (d_sigma if abs(d_sigma) > 1e-6 else 1e-6)
-                pred[guessed_mask] = v_guess.to(pred.dtype)
+                
+                # 添加动量：将上一轮的速度以权重0.05加到当前guess的速度上
+                v_guess_with_momentum = (1 - momentum_weight) * v_guess + momentum_weight * prev_velocities[guessed_mask]
+                
+                pred[guessed_mask] = v_guess_with_momentum.to(pred.dtype)
+                
+                # 更新guess样本的速度记录（用于下一轮动量）
+                prev_velocities[guessed_mask] = v_guess_with_momentum
             
             # 演进
             z, pred_original, log_prob = flux_step(pred, z.to(torch.float32), args.eta, sigmas=sigma_schedule, index=i, prev_sample=None, grpo=True, sde_solver=True)

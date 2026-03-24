@@ -225,6 +225,8 @@ def run_sample_step(
         last_step_guessed_mask = torch.zeros(B, device=z.device, dtype=torch.bool)
         # 跟踪每个rollout累计被guess的次数
         cumulative_guess_count = torch.zeros(B, device=z.device, dtype=torch.long)
+        # 存储上一轮每个rollout的速度（用于直接复用）
+        prev_velocities = torch.zeros_like(z, dtype=torch.float32)
         
         for i in progress_bar:  # Add progress bar
             sigma = sigma_schedule[i]
@@ -280,47 +282,13 @@ def run_sample_step(
                     )[0]
                 pred[infer_mask] = v_infer.to(pred.dtype)
                 
-                # 计算推理样本的速度场 v_infer，用于后续计算平均方向
-                # 将速度场存储到完整的pred tensor中，用于按rollout计算平均
-                v_full = torch.zeros_like(z, dtype=torch.float32)
-                v_full[infer_mask] = v_infer.to(torch.float32)
-                
-                # --- 按rollout维度计算每个sample的平均速度场 ---
-                # 初始化平均速度场容器 (B, ...)
-                v_mean = torch.zeros_like(z, dtype=torch.float32)
-                
-                # 遍历每个prompt，对其对应的num_generations个rollout计算平均
-                for p in range(num_prompts):
-                    start_idx = p * num_generations
-                    end_idx = (p + 1) * num_generations
-                    
-                    # 获取该prompt对应的所有rollout的mask
-                    group_infer_mask = infer_mask[start_idx:end_idx]
-                    
-                    if group_infer_mask.any():
-                        # 只对推理的样本计算平均速度场
-                        # 统计该组内有多少个infer样本
-                        offset = infer_mask[:start_idx].sum().item()
-                        count = group_infer_mask.sum().item()
-                        
-                        # 从v_infer中提取该组的速度场并计算平均
-                        group_v_mean = v_infer[offset : offset + count].mean(dim=0)
-                        v_mean[start_idx:end_idx] = group_v_mean
-                    else:
-                        # 如果整个组都没有infer（理论上不应发生），使用零向量
-                        v_mean[start_idx:end_idx] = 0.0
-                
-                # 根据平均速度场计算guess的预测终点
-                x_L_mean = z.to(torch.float32) + v_mean * d_sigma
-            else:
-                x_L_mean = z.to(torch.float32).mean(dim=0, keepdim=True).expand(B, *z.shape[1:])
+                # 更新推理样本的速度记录（用于下一轮）
+                prev_velocities[infer_mask] = v_infer.to(torch.float32)
 
-            # 预测分支
+            # 预测分支：直接复用上一轮的速度
             if guessed_mask.any():
-                # v_hat = (x_L_mean - x_t) / (0 - sigma)
-                # 这里的 x_L_mean 已经是按组对应的了
-                v_guess = (x_L_mean[guessed_mask] - z[guessed_mask].to(torch.float32)) / (d_sigma if abs(d_sigma) > 1e-6 else 1e-6)
-                pred[guessed_mask] = v_guess.to(pred.dtype)
+                # 直接使用上一轮记录的速度
+                pred[guessed_mask] = prev_velocities[guessed_mask].to(pred.dtype)
             
             # 演进
             z, pred_original, log_prob = flux_step(pred, z.to(torch.float32), args.eta, sigmas=sigma_schedule, index=i, prev_sample=None, grpo=True, sde_solver=True)

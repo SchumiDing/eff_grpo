@@ -225,9 +225,22 @@ def run_sample_step(
         last_step_guessed_mask = torch.zeros(B, device=z.device, dtype=torch.bool)
         # 跟踪每个rollout累计被guess的次数
         cumulative_guess_count = torch.zeros(B, device=z.device, dtype=torch.long)
+        # 存储上一轮每个rollout的速度（用于动量）
+        prev_velocities = torch.zeros_like(z, dtype=torch.float32)
         
         for i in progress_bar:  # Add progress bar
             sigma = sigma_schedule[i]
+            # 自适应动量权重：早期步骤使用较小权重，后期使用较大权重
+            if i < len(progress_bar) * 0.5:
+                ratio = (sigma / sigma_schedule[0])*2
+            else:
+                ratio = 1
+            momentum_weight = 0.8 + 0.2*ratio
+            # if i > len(progress_bar) * 0.5:
+            #     ratio = (1 - sigma / sigma_schedule[0])
+            # else:
+            #     ratio = 0
+            # momentum_weight = (1 - 0.5*ratio)
             d_sigma = 0 - sigma # 到达终点 0 的距离
             timestep_value = int(sigma * 1000)
             timesteps = torch.full([B], timestep_value, device=z.device, dtype=torch.long)
@@ -285,6 +298,9 @@ def run_sample_step(
                 v_full = torch.zeros_like(z, dtype=torch.float32)
                 v_full[infer_mask] = v_infer.to(torch.float32)
                 
+                # 更新推理样本的速度记录（用于下一轮动量）
+                prev_velocities[infer_mask] = v_infer.to(torch.float32)
+                
                 # --- 按rollout维度计算每个sample的平均速度场 ---
                 # 初始化平均速度场容器 (B, ...)
                 v_mean = torch.zeros_like(z, dtype=torch.float32)
@@ -320,7 +336,14 @@ def run_sample_step(
                 # v_hat = (x_L_mean - x_t) / (0 - sigma)
                 # 这里的 x_L_mean 已经是按组对应的了
                 v_guess = (x_L_mean[guessed_mask] - z[guessed_mask].to(torch.float32)) / (d_sigma if abs(d_sigma) > 1e-6 else 1e-6)
-                pred[guessed_mask] = v_guess.to(pred.dtype)
+                
+                # 添加动量：将上一轮的速度以权重0.05加到当前guess的速度上
+                v_guess_with_momentum = (1 - momentum_weight) * v_guess + momentum_weight * prev_velocities[guessed_mask]
+                
+                pred[guessed_mask] = v_guess_with_momentum.to(pred.dtype)
+                
+                # 更新guess样本的速度记录（用于下一轮动量）
+                prev_velocities[guessed_mask] = v_guess_with_momentum
             
             # 演进
             z, pred_original, log_prob = flux_step(pred, z.to(torch.float32), args.eta, sigmas=sigma_schedule, index=i, prev_sample=None, grpo=True, sde_solver=True)
@@ -623,6 +646,7 @@ def train_one_step(
     ema_handler
 ):
     total_loss = 0.0
+    grad_norm = torch.tensor(0.0).to(device)
 
     #device = latents.device
     if args.use_group:

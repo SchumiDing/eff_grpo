@@ -1,18 +1,18 @@
 #!/bin/bash
 
-export WANDB_MODE=online
-export WANDB_PROJECT="grpo_comparison"
-export WANDB_NAME="efficient_rollout_6_2"
+export WANDB_MODE=disabled
 
-mkdir -p data/outputs/efficient
+mkdir -p data/outputs/efficient_auto
 
-torchrun --nproc_per_node=8 --master_port 19002 \
-    fastvideo/train_grpo_qwenimage.py \
+# 使用 4 卡训练 (--nproc_per_node=4)
+# 调整 gradient_accumulation_steps 为 24 以保持总 Batch Size 为 96 (4 * 1 * 24)
+torchrun --nproc_per_node=4 --master_port 19003 \
+    fastvideo/train_grpo_qwenimage_eff_mta_auto.py \
     --seed 42 \
     --pretrained_model_name_or_path data/qwenimage \
     --vae_model_path data/qwenimage \
     --cache_dir data/.cache \
-    --data_json_path data/rl_embeddings/videos2caption.json \
+    --data_json_path data/qwenimage/rl_embeddings/videos2caption.json \
     --gradient_checkpointing \
     --train_batch_size 1 \
     --num_latent_t 1 \
@@ -26,7 +26,7 @@ torchrun --nproc_per_node=8 --master_port 19002 \
     --checkpointing_steps 60 \
     --allow_tf32 \
     --cfg 0.0 \
-    --output_dir data/outputs/grpo \
+    --output_dir data/outputs/grpo_auto \
     --h 720 \
     --w 720 \
     --t 1 \
@@ -38,6 +38,8 @@ torchrun --nproc_per_node=8 --master_port 19002 \
     --weight_decay 0.0001 \
     --use_hpsv2 \
     --num_generations 12 \
+    --num_infer 8 \
+    --num_guess 4 \
     --shift 3 \
     --use_group \
     --ignore_last \
@@ -45,4 +47,5 @@ torchrun --nproc_per_node=8 --master_port 19002 \
     --init_same_noise \
     --clip_range 1e-4 \
     --adv_clip_max 5.0 \
-    --selective_checkpointing 1
+    --selective_checkpointing 1 \
+    --use_cpu_offload

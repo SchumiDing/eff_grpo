@@ -225,6 +225,13 @@ def run_sample_step(
         last_step_guessed_mask = torch.zeros(B, device=z.device, dtype=torch.bool)
         # 跟踪每个rollout累计被guess的次数
         cumulative_guess_count = torch.zeros(B, device=z.device, dtype=torch.long)
+        # 存储上一轮每个rollout的速度（用于动量）
+        prev_velocities = torch.zeros_like(z, dtype=torch.float32)
+        momentum_weight = 0.1
+        # 二阶预测：存储历史位置和时间步
+        z_history = []  # 存储历史位置 [z_t-2, z_t-1, ...]
+        sigma_history = []  # 存储历史sigma值
+        acceleration_weight = 0.05  # 加速度权重
         
         for i in progress_bar:  # Add progress bar
             sigma = sigma_schedule[i]
@@ -285,6 +292,9 @@ def run_sample_step(
                 v_full = torch.zeros_like(z, dtype=torch.float32)
                 v_full[infer_mask] = v_infer.to(torch.float32)
                 
+                # 更新推理样本的速度记录（用于下一轮动量）
+                prev_velocities[infer_mask] = v_infer.to(torch.float32)
+                
                 # --- 按rollout维度计算每个sample的平均速度场 ---
                 # 初始化平均速度场容器 (B, ...)
                 v_mean = torch.zeros_like(z, dtype=torch.float32)
@@ -320,7 +330,40 @@ def run_sample_step(
                 # v_hat = (x_L_mean - x_t) / (0 - sigma)
                 # 这里的 x_L_mean 已经是按组对应的了
                 v_guess = (x_L_mean[guessed_mask] - z[guessed_mask].to(torch.float32)) / (d_sigma if abs(d_sigma) > 1e-6 else 1e-6)
-                pred[guessed_mask] = v_guess.to(pred.dtype)
+                
+                # 基于历史轨迹的二阶预测
+                if len(z_history) >= 2:
+                    # 获取前两步的位置和时间
+                    prev_z_1 = z_history[-1]  # t-1时刻
+                    prev_z_2 = z_history[-2]  # t-2时刻
+                    sigma_1 = sigma_history[-1]  # t-1时刻的sigma
+                    sigma_2 = sigma_history[-2]  # t-2时刻的sigma
+                    
+                    # 计算时间间隔
+                    dt_1 = sigma_2 - sigma_1  # t-2到t-1的时间间隔
+                    dt_2 = sigma_1 - sigma  # t-1到t的时间间隔
+                    
+                    # 计算速度（一阶差分）
+                    velocity_1 = (prev_z_1 - prev_z_2) / (dt_1 if abs(dt_1) > 1e-6 else 1e-6)
+                    velocity_2 = (z.to(torch.float32) - prev_z_1) / (dt_2 if abs(dt_2) > 1e-6 else 1e-6)
+                    
+                    # 计算加速度（二阶差分）
+                    avg_dt = (abs(dt_1) + abs(dt_2)) / 2
+                    acceleration = (velocity_2 - velocity_1) / (avg_dt if avg_dt > 1e-6 else 1e-6)
+                    
+                    # 预测时考虑加速度
+                    v_guess_with_acceleration = v_guess + momentum_weight * velocity_2[guessed_mask] + 0.5 * acceleration_weight * acceleration[guessed_mask]
+                    pred[guessed_mask] = v_guess_with_acceleration.to(pred.dtype)
+                    
+                    # 更新guess样本的速度记录
+                    prev_velocities[guessed_mask] = v_guess_with_acceleration
+                else:
+                    # 如果历史不足2步，使用一阶动量
+                    v_guess_with_momentum = v_guess + momentum_weight * prev_velocities[guessed_mask]
+                    pred[guessed_mask] = v_guess_with_momentum.to(pred.dtype)
+                    
+                    # 更新guess样本的速度记录（用于下一轮动量）
+                    prev_velocities[guessed_mask] = v_guess_with_momentum
             
             # 演进
             z, pred_original, log_prob = flux_step(pred, z.to(torch.float32), args.eta, sigmas=sigma_schedule, index=i, prev_sample=None, grpo=True, sde_solver=True)
@@ -329,6 +372,14 @@ def run_sample_step(
             all_latents.append(z)
             all_log_probs.append(log_prob)
             all_mock_flags.append(mock_flag)
+            
+            # 更新历史记录（在演进之后）
+            z_history.append(z.clone().to(torch.float32))
+            sigma_history.append(sigma)
+            # 只保留最近3步的历史（用于二阶预测只需要2步）
+            if len(z_history) > 3:
+                z_history.pop(0)
+                sigma_history.pop(0)
             
             last_step_guessed_mask = guessed_mask
 

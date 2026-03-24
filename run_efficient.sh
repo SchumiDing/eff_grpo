@@ -6,15 +6,15 @@ export WANDB_NAME="efficient_rollout_6_2"
 
 mkdir -p data/outputs/efficient
 
-torchrun --nproc_per_node=4 --master_port 19004 \
-    fastvideo/train_grpo_qwenimage_eff.py \
+torchrun --nproc_per_node=8 --master_port 19002 \
+    fastvideo/train_grpo_qwenimage.py \
     --seed 42 \
     --pretrained_model_name_or_path data/qwenimage \
     --vae_model_path data/qwenimage \
     --cache_dir data/.cache \
     --data_json_path data/rl_embeddings/videos2caption.json \
     --gradient_checkpointing \
-    --train_batch_size 2 \
+    --train_batch_size 1 \
     --num_latent_t 1 \
     --sp_size 1 \
     --train_sp_batch_size 2 \
@@ -26,7 +26,7 @@ torchrun --nproc_per_node=4 --master_port 19004 \
     --checkpointing_steps 60 \
     --allow_tf32 \
     --cfg 0.0 \
-    --output_dir data/outputs/efficient \
+    --output_dir data/outputs/grpo \
     --h 720 \
     --w 720 \
     --t 1 \
@@ -37,9 +37,9 @@ torchrun --nproc_per_node=4 --master_port 19004 \
     --max_grad_norm 1.0 \
     --weight_decay 0.0001 \
     --use_hpsv2 \
-    --num_generations 8 \
-    --num_infer 6 \
-    --num_guess 2 \
+    --num_generations 12 \
+    --num_infer 8 \
+    --num_guess 4 \
     --shift 3 \
     --use_group \
     --ignore_last \
@@ -47,4 +47,4 @@ torchrun --nproc_per_node=4 --master_port 19004 \
     --init_same_noise \
     --clip_range 1e-4 \
     --adv_clip_max 5.0 \
-    --selective_checkpointing 0.5
+    --selective_checkpointing 1

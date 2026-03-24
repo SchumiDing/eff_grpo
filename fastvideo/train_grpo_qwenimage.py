@@ -303,83 +303,128 @@ def sample_reference_model(
     IN_CHANNELS = 16
     latent_w, latent_h = w // SPATIAL_DOWNSAMPLE, h // SPATIAL_DOWNSAMPLE
 
-    batch_size = 1  
-    batch_indices = torch.chunk(torch.arange(B), B // batch_size)
-
     all_latents = []
     all_log_probs = []
     all_rewards = []  
     all_txt_seq_lens = []
+    
+    # 并发处理所有rollout - 准备初始噪声
     if args.init_same_noise:
+        # 生成一个噪声并扩展到所有样本
         input_latents = torch.randn(
-                (1, 1, IN_CHANNELS, latent_h, latent_w),  #（c,t,h,w)
+                (1, 1, IN_CHANNELS, latent_h, latent_w),
+                device=device,
+                dtype=torch.bfloat16,
+            ).expand(B, 1, IN_CHANNELS, latent_h, latent_w)
+    else:
+        # 为每个sample生成不同的噪声
+        input_latents = torch.randn(
+                (B, 1, IN_CHANNELS, latent_h, latent_w),
                 device=device,
                 dtype=torch.bfloat16,
             )
-
-    for index, batch_idx in enumerate(batch_indices):
-        batch_encoder_hidden_states = encoder_hidden_states[batch_idx][:,:original_length[batch_idx]]
-        batch_prompt_attention_mask = prompt_attention_masks[batch_idx][:,:original_length[batch_idx]]
-
-        batch_caption = [caption[i] for i in batch_idx]
-        if not args.init_same_noise:
-            input_latents = torch.randn(
-                    (len(batch_idx), 1, IN_CHANNELS, latent_h, latent_w),  #（c,t,h,w)
-                    device=device,
-                    dtype=torch.bfloat16,
-                )
-        packed_height = 2 * (int(h) // (8 * 2))
-        packed_width = 2 * (int(w) // (8 * 2))
-        input_latents_new = pack_latents(input_latents, len(batch_idx), 16, packed_height, packed_width)
-        txt_seq_lens =  batch_prompt_attention_mask.sum(dim=1).tolist() 
-        img_shapes = [[(1, h // 8 // 2, w // 8// 2)]] 
-        grpo_sample=True
-        progress_bar = tqdm(range(0, sample_steps), desc="Sampling Progress")
-        with torch.no_grad():
-            z, latents, batch_latents, batch_log_probs = run_sample_step(
-                args,
-                input_latents_new.clone(),
-                progress_bar,
-                sigma_schedule,
-                transformer,
-                batch_encoder_hidden_states,
-                batch_prompt_attention_mask,
-                img_shapes,
-                txt_seq_lens,
-                grpo_sample,
+    
+    packed_height = 2 * (int(h) // (8 * 2))
+    packed_width = 2 * (int(w) // (8 * 2))
+    input_latents_new = pack_latents(input_latents, B, 16, packed_height, packed_width)
+    
+    # 准备所有样本的序列长度和形状信息
+    # 处理不同长度的prompt - 先切片再padding
+    encoder_hidden_states_processed = []
+    prompt_attention_masks_processed = []
+    
+    for idx in range(B):
+        actual_length = original_length[idx].item() if torch.is_tensor(original_length[idx]) else original_length[idx]
+        encoder_hidden_states_processed.append(encoder_hidden_states[idx:idx+1, :actual_length, :])
+        prompt_attention_masks_processed.append(prompt_attention_masks[idx:idx+1, :actual_length])
+    
+    # 找到最大序列长度用于padding
+    max_seq_len = max(embed.shape[1] for embed in encoder_hidden_states_processed)
+    
+    # Padding所有embeddings到相同长度
+    encoder_hidden_states_padded_list = []
+    prompt_attention_masks_padded_list = []
+    txt_seq_lens = []
+    
+    for idx in range(B):
+        embed = encoder_hidden_states_processed[idx]  # (1, orig_len, hidden_dim)
+        mask = prompt_attention_masks_processed[idx]  # (1, orig_len)
+        
+        current_len = embed.shape[1]
+        if current_len < max_seq_len:
+            # Pad embeddings with zeros
+            pad_len = max_seq_len - current_len
+            embed = torch.nn.functional.pad(embed, (0, 0, 0, pad_len), "constant", 0)
+            # Pad attention mask with False (0)
+            mask = torch.nn.functional.pad(mask, (0, pad_len), "constant", 0)
+        
+        encoder_hidden_states_padded_list.append(embed)
+        prompt_attention_masks_padded_list.append(mask)
+        # txt_seq_lens使用padding后的attention mask的sum
+        txt_seq_lens.append(int(mask.sum().item()))
+    
+    # 拼接成最终的tensors
+    encoder_hidden_states_padded = torch.cat(encoder_hidden_states_padded_list, dim=0)
+    prompt_attention_masks_padded = torch.cat(prompt_attention_masks_padded_list, dim=0)
+    
+    # img_shapes应该只有一个元素
+    img_shapes = [[(1, h // 8 // 2, w // 8// 2)]]
+    
+    grpo_sample = True
+    progress_bar = tqdm(range(0, sample_steps), desc="Sampling Progress (Original)")
+    
+    # 一次性推理所有rollout
+    with torch.no_grad():
+        z, latents, all_latents_tensor, all_log_probs_tensor = run_sample_step(
+            args,
+            input_latents_new.clone(),
+            progress_bar,
+            sigma_schedule,
+            transformer,
+            encoder_hidden_states_padded,
+            prompt_attention_masks_padded,
+            img_shapes,
+            txt_seq_lens,
+            grpo_sample,
+        )
+    
+    # 存储结果
+    all_latents.append(all_latents_tensor)
+    all_log_probs.append(all_log_probs_tensor)
+    all_txt_seq_lens.append(torch.tensor(txt_seq_lens))
+    
+    vae.enable_tiling()
+    image_processor = VaeImageProcessor(16)
+    rank = int(os.environ["RANK"])
+    
+    # 批量解码所有latents
+    with torch.inference_mode():
+        with torch.autocast("cuda", dtype=torch.bfloat16):
+            latents_unpacked = unpack_latents(latents, h, w, 8)
+            latents_unpacked = latents_unpacked.to(vae.dtype)
+            latents_mean = (
+                torch.tensor(vae.config.latents_mean)
+                .view(1, vae.config.z_dim, 1, 1, 1)
+                .to(latents_unpacked.device, latents_unpacked.dtype)
             )
-        all_latents.append(batch_latents)
-        all_log_probs.append(batch_log_probs)
-        all_txt_seq_lens.append(torch.tensor(txt_seq_lens))
-        vae.enable_tiling()
-        
-        image_processor = VaeImageProcessor(16)
-        rank = int(os.environ["RANK"])
-
-        
-        with torch.inference_mode():
-            with torch.autocast("cuda", dtype=torch.bfloat16):
-                latents = unpack_latents(latents, h, w, 8)
-                latents = latents.to(vae.dtype)
-                latents_mean = (
-                    torch.tensor(vae.config.latents_mean)
-                    .view(1, vae.config.z_dim, 1, 1, 1)
-                    .to(latents.device, latents.dtype)
-                )
-                latents_std = 1.0 / torch.tensor(vae.config.latents_std).view(1, vae.config.z_dim, 1, 1, 1).to(
-                    latents.device, latents.dtype
-                )
-                latents = latents / latents_std + latents_mean
-                image = vae.decode(latents, return_dict=False)[0][:, :, 0]
-                decoded_image = image_processor.postprocess(image)
-        decoded_image[0].save(f"./images/qwenimage_{rank}_{index}.png")
-        if args.use_hpsv2:
-            with torch.no_grad():
-                image_path = decoded_image[0]
+            latents_std = 1.0 / torch.tensor(vae.config.latents_std).view(1, vae.config.z_dim, 1, 1, 1).to(
+                latents_unpacked.device, latents_unpacked.dtype
+            )
+            latents_unpacked = latents_unpacked / latents_std + latents_mean
+            images = vae.decode(latents_unpacked, return_dict=False)[0][:, :, 0]
+            decoded_images = image_processor.postprocess(images)
+    
+    # 保存所有图像
+    for idx in range(B):
+        decoded_images[idx].save(f"./images/qwenimage_{rank}_{idx}.png")
+    
+    # 批量计算reward
+    if args.use_hpsv2:
+        with torch.no_grad():
+            for idx in range(B):
+                image_path = decoded_images[idx]
                 image = preprocess_val(image_path).unsqueeze(0).to(device=device, non_blocking=True)
-                # Process the prompt
-                text = tokenizer([batch_caption[0]]).to(device=device, non_blocking=True)
-                # Calculate the HPS
+                text = tokenizer([caption[idx]]).to(device=device, non_blocking=True)
                 with torch.amp.autocast('cuda'):
                     outputs = reward_model(image, text)
                     image_features, text_features = outputs["image_features"], outputs["text_features"]
@@ -387,50 +432,58 @@ def sample_reference_model(
                     hps_score = torch.diagonal(logits_per_image)
                 all_rewards.append(hps_score)
 
-        if args.use_hpsv3:
-            with torch.no_grad():
-                hps_score = reward_model.reward([f"./images/qwenimage_{rank}_{index}.png"], [batch_caption[0]])
+    if args.use_hpsv3:
+        with torch.no_grad():
+            for idx in range(B):
+                hps_score = reward_model.reward([f"./images/qwenimage_{rank}_{idx}.png"], [caption[idx]])
                 if hps_score.ndim == 2:
                     hps_score = hps_score[:,0]
                 all_rewards.append(hps_score)
+    
+    if args.use_pickscore:
+        def calc_probs(processor, model, prompt, images, device):
+            # preprocess
+            image_inputs = processor(
+                images=images,
+                padding=True,
+                truncation=True,
+                max_length=77,
+                return_tensors="pt",
+            ).to(device)
+            text_inputs = processor(
+                text=prompt,
+                padding=True,
+                truncation=True,
+                max_length=77,
+                return_tensors="pt",
+            ).to(device)
+            with torch.no_grad():
+                # embed
+                image_embs = model.get_image_features(**image_inputs)
+                image_embs = image_embs / torch.norm(image_embs, dim=-1, keepdim=True)
+            
+                text_embs = model.get_text_features(**text_inputs)
+                text_embs = text_embs / torch.norm(text_embs, dim=-1, keepdim=True)
+            
+                # score
+                scores = (text_embs @ image_embs.T)[0]
+            
+            return scores
         
-        if args.use_pickscore:
-            def calc_probs(processor, model, prompt, images, device):
-                # preprocess
-                image_inputs = processor(
-                    images=images,
-                    padding=True,
-                    truncation=True,
-                    max_length=77,
-                    return_tensors="pt",
-                ).to(device)
-                text_inputs = processor(
-                    text=prompt,
-                    padding=True,
-                    truncation=True,
-                    max_length=77,
-                    return_tensors="pt",
-                ).to(device)
-                with torch.no_grad():
-                    # embed
-                    image_embs = model.get_image_features(**image_inputs)
-                    image_embs = image_embs / torch.norm(image_embs, dim=-1, keepdim=True)
-                
-                    text_embs = model.get_text_features(**text_inputs)
-                    text_embs = text_embs / torch.norm(text_embs, dim=-1, keepdim=True)
-                
-                    # score
-                    scores = (text_embs @ image_embs.T)[0]
-                
-                return scores
-            pil_images = [Image.open(f"./images/qwenimage_{rank}_{index}.png")]
-            score = calc_probs(tokenizer, reward_model, caption, pil_images, device)
+        for idx in range(B):
+            pil_images = [Image.open(f"./images/qwenimage_{rank}_{idx}.png")]
+            score = calc_probs(tokenizer, reward_model, caption[idx], pil_images, device)
             all_rewards.append(score)
 
     all_latents = torch.cat(all_latents, dim=0)
     all_log_probs = torch.cat(all_log_probs, dim=0)
-    all_rewards = torch.cat(all_rewards, dim=0)
     all_txt_seq_lens = torch.cat(all_txt_seq_lens, dim=0)
+    
+    # 如果没有使用reward model,创建dummy rewards
+    if len(all_rewards) == 0:
+        all_rewards = torch.zeros(B, device=device, dtype=torch.float32)
+    else:
+        all_rewards = torch.cat(all_rewards, dim=0)
     
     return all_rewards, all_latents, all_log_probs, sigma_schedule, all_txt_seq_lens
 

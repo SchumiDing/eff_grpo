@@ -2,116 +2,220 @@ import torch
 import os
 import argparse
 from tqdm import tqdm
-from diffusers import DiffusionPipeline
-from diffusers.models.autoencoders import AutoencoderKLQwenImage
-from diffusers.models.transformers.transformer_qwenimage import QwenImageTransformer2DModel
-from diffusers.image_processor import VaeImageProcessor
 from PIL import Image
+from diffusers.image_processor import VaeImageProcessor
+import json
 
-# 导入 eff 脚本中的关键函数
-from train_grpo_qwenimage_eff import run_sample_step, pack_latents, unpack_latents, sd3_time_shift
+# 导入 eff 脚本中的关键函数和类
+from train_grpo_qwenimage_eff import sample_reference_model, sd3_time_shift
 
 def test_main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_path", type=str, default="data/qwenimage", help="Path to qwenimage weights")
-    parser.add_argument("--prompt", type=str, default="A beautiful cat sitting on a sofa, high quality, highly detailed", help="Test prompt")
-    parser.add_argument("--num_generations", type=int, default=4, help="Number of samples in one rollout group")
-    parser.add_argument("--num_guess", type=int, default=2, help="Number of samples to guess per step")
-    parser.add_argument("--sampling_steps", type=int, default=25)
-    parser.add_argument("--height", type=int, default=512)
-    parser.add_argument("--width", type=int, default=512)
-    parser.add_argument("--eta", type=float, default=1.0)
+    parser.add_argument("--embeddings_path", type=str, default="data/qwenimage/rl_embeddings", help="Path to rl embeddings")
+    parser.add_argument("--num_generations", type=int, default=12, help="Number of samples per prompt")
+    parser.add_argument("--num_guess", type=int, default=3, help="Number of samples to guess per step")
+    parser.add_argument("--sampling_steps", type=int, default=20)
+    parser.add_argument("--height", type=int, default=720)
+    parser.add_argument("--width", type=int, default=720)
+    parser.add_argument("--eta", type=float, default=0.3)
     parser.add_argument("--shift", type=float, default=3.0)
     parser.add_argument("--output_path", type=str, default="./test_results")
+    parser.add_argument("--init_same_noise", action="store_true", default=False, help="Use same noise for all samples in a group")
+    parser.add_argument("--start_idx", type=int, default=0, help="Start index of embeddings to load")
+    parser.add_argument("--end_idx", type=int, default=2, help="End index of embeddings to load (None means all)")
     args = parser.parse_args()
 
     device = torch.device("cuda")
     os.makedirs(args.output_path, exist_ok=True)
 
-    # 1. 加载组件 (参考 preprocess 逻辑使用 DiffusionPipeline 编码)
+    # 1. 加载组件 (与训练脚本保持一致)
     print("Loading models...")
-    pipe = DiffusionPipeline.from_pretrained(args.model_path, torch_dtype=torch.bfloat16).to(device)
-    transformer = QwenImageTransformer2DModel.from_pretrained(args.model_path, subfolder="transformer", torch_dtype=torch.bfloat16).to(device)
-    vae = AutoencoderKLQwenImage.from_pretrained(args.model_path, subfolder="vae", torch_dtype=torch.bfloat16).to(device)
+    # 从训练脚本导入正确的类
+    from diffusers.models.transformers.transformer_qwenimage import QwenImageTransformer2DModel
+    from diffusers.models.autoencoders import AutoencoderKLQwenImage
     
-    # 2. 编码 Prompt (参考 preprocess_qwenimage_embedding.py 逻辑)
-    print(f"Encoding prompt: {args.prompt}")
-    with torch.inference_mode():
-        prompt_embeds, prompt_attention_mask = pipe.encode_prompt(prompt=[args.prompt])
-        # 模拟预处理中的 padding 逻辑
-        target_length = 1024
-        original_length = prompt_embeds.shape[1]
-        pad_len = target_length - original_length
-        prompt_embeds = torch.nn.functional.pad(prompt_embeds, (0, 0, 0, pad_len), "constant", 0)
-        prompt_attention_mask = torch.nn.functional.pad(prompt_attention_mask, (0, pad_len), "constant", 0)
-
-    # 准备 Batch (重复 num_generations 次组成一个 rollout group)
-    B = args.num_generations
-    prompt_embeds = prompt_embeds.repeat(B, 1, 1).to(device)
-    prompt_attention_mask = prompt_attention_mask.repeat(B, 1).to(device)
-    txt_seq_lens = [original_length] * B
-    img_shapes = [[(1, args.height // 8 // 2, args.width // 8 // 2)]]
-
-    # 3. 准备噪声
-    IN_CHANNELS = 16
-    latent_h, latent_w = args.height // 8, args.width // 8
-    input_latents = torch.randn((B, 1, IN_CHANNELS, latent_h, latent_w), device=device, dtype=torch.bfloat16)
+    transformer = QwenImageTransformer2DModel.from_pretrained(
+        args.model_path, 
+        subfolder="transformer", 
+        torch_dtype=torch.bfloat16
+    ).to(device)
     
-    # Packing latents
-    packed_height = 2 * (args.height // (8 * 2))
-    packed_width = 2 * (args.width // (8 * 2))
-    z_input = pack_latents(input_latents, B, IN_CHANNELS, packed_height, packed_width)
-
-    # 4. 采样 (使用 eff 逻辑)
-    print("Starting efficient sampling...")
-    sigma_schedule = torch.linspace(1, 0, args.sampling_steps + 1).to(device)
-    sigma_schedule = sd3_time_shift(args.shift, sigma_schedule)
-    progress_bar = tqdm(range(args.sampling_steps), desc="Steps")
-
-    # 为了适配 run_sample_step, 模拟 args 对象
-    class MockArgs:
-        def __init__(self, n_guess, n_gen, eta):
-            self.num_guess = n_guess
-            self.num_generations = n_gen
-            self.eta = eta
+    vae = AutoencoderKLQwenImage.from_pretrained(
+        args.model_path, 
+        subfolder="vae", 
+        torch_dtype=torch.bfloat16
+    ).to(device)
     
-    mock_args = MockArgs(args.num_guess, args.num_generations, args.eta)
-
-    with torch.no_grad():
-        z_final, x0_pred, all_z, all_log_probs, all_mock_flags = run_sample_step(
-            mock_args,
-            z_input,
-            progress_bar,
-            sigma_schedule,
-            transformer,
-            prompt_embeds,
-            prompt_attention_mask,
-            img_shapes,
-            txt_seq_lens,
-            grpo_sample=True
+    # 2. 加载 RL embeddings (与训练脚本保持一致)
+    print(f"Loading embeddings from {args.embeddings_path}...")
+    json_path = os.path.join(args.embeddings_path, "videos2caption.json")
+    prompt_embed_dir = os.path.join(args.embeddings_path, "prompt_embed")
+    prompt_attention_mask_dir = os.path.join(args.embeddings_path, "prompt_attention_mask")
+    
+    with open(json_path, "r") as f:
+        data_anno = json.load(f)
+    
+    # 确定要处理的数据范围
+    end_idx = args.end_idx if args.end_idx is not None else len(data_anno)
+    data_anno = data_anno[args.start_idx:end_idx]
+    print(f"Processing {len(data_anno)} prompts (index {args.start_idx} to {end_idx-1})")
+    
+    # 加载所有 embeddings
+    all_prompt_embeds = []
+    all_prompt_attention_masks = []
+    all_captions = []
+    all_original_lengths = []
+    
+    print("Loading embeddings...")
+    for item in tqdm(data_anno, desc="Loading embeddings"):
+        prompt_embed = torch.load(
+            os.path.join(prompt_embed_dir, item["prompt_embed_path"]),
+            map_location="cpu",
+            weights_only=True,
         )
-
-    # 5. 解码并保存 (参考原版解码逻辑)
-    print("Decoding results...")
-    image_processor = VaeImageProcessor(16)
-    with torch.inference_mode():
-        # 解码 x0_pred (即模型预测的终点)
-        latents = unpack_latents(x0_pred, args.height, args.width, 8)
-        latents = latents.to(vae.dtype)
+        prompt_attention_mask = torch.load(
+            os.path.join(prompt_attention_mask_dir, item["prompt_attention_mask"]),
+            map_location="cpu",
+            weights_only=True,
+        )
+        all_prompt_embeds.append(prompt_embed)
+        all_prompt_attention_masks.append(prompt_attention_mask)
+        all_captions.append(item['caption'])
+        all_original_lengths.append(item['original_length'])
+    
+    # Stack embeddings
+    all_prompt_embeds = torch.stack(all_prompt_embeds, dim=0)  # (N, seq_len, hidden_dim)
+    all_prompt_attention_masks = torch.stack(all_prompt_attention_masks, dim=0)  # (N, seq_len)
+    
+    print(f"Loaded embeddings shape: {all_prompt_embeds.shape}")
+    print(f"Total prompts: {len(all_captions)}")
+    
+    # 3. 使用 sample_reference_model 函数进行采样
+    print("\n" + "="*80)
+    print("FULL BATCH ROLLOUT MODE - Using sample_reference_model")
+    print("="*80)
+    
+    num_prompts = len(all_captions)
+    
+    # 为了适配 sample_reference_model, 模拟 args 对象
+    class MockArgs:
+        def __init__(self, **kwargs):
+            for key, value in kwargs.items():
+                setattr(self, key, value)
+    
+    # 创建 mock args (包含所有需要的参数)
+    mock_args = MockArgs(
+        num_guess=args.num_guess,
+        num_generations=args.num_generations,
+        eta=args.eta,
+        sampling_steps=args.sampling_steps,
+        shift=args.shift,
+        init_same_noise=args.init_same_noise,
+        w=args.width,
+        h=args.height,
+        t=1,  # 单帧
+        use_hpsv2=False,
+        use_hpsv3=False,
+        use_pickscore=False,
+    )
+    
+    # 每个 prompt 重复 num_generations 次 (与训练脚本保持一致)
+    print(f"Expanding each prompt {args.num_generations} times...")
+    encoder_hidden_states_list = []
+    prompt_attention_masks_list = []
+    original_length_list = []
+    captions_expanded = []
+    
+    for i in tqdm(range(num_prompts), desc="Expanding prompts"):
+        for _ in range(args.num_generations):
+            encoder_hidden_states_list.append(all_prompt_embeds[i:i+1])
+            prompt_attention_masks_list.append(all_prompt_attention_masks[i:i+1])
+            original_length_list.append(all_original_lengths[i])
+            captions_expanded.append(all_captions[i])
+    
+    # 拼接成最终的 tensors
+    print("Concatenating all embeddings into one big batch...")
+    encoder_hidden_states = torch.cat(encoder_hidden_states_list, dim=0).to(device)
+    prompt_attention_masks = torch.cat(prompt_attention_masks_list, dim=0).to(device)
+    original_length = torch.tensor(original_length_list).to(device)
+    
+    total_samples = num_prompts * args.num_generations
+    print(f"\n{'='*80}")
+    print(f"Total samples in batch: {total_samples} ({num_prompts} prompts × {args.num_generations} generations)")
+    print(f"Encoder hidden states shape: {encoder_hidden_states.shape}")
+    print(f"Prompt attention masks shape: {prompt_attention_masks.shape}")
+    print(f"Original lengths (first 5): {original_length[:5].tolist()}")
+    print(f"{'='*80}\n")
+    
+    # 调用 sample_reference_model 函数
+    print(f"\n{'='*80}")
+    print(f"Starting FULL BATCH sampling for {total_samples} samples...")
+    print(f"{'='*80}\n")
+    
+    # sample_reference_model 会处理所有的采样、解码和保存
+    all_rewards, all_latents, all_log_probs, sigma_schedule, all_txt_seq_lens, all_mock_flags = sample_reference_model(
+        mock_args,
+        device,
+        transformer,
+        vae,
+        encoder_hidden_states,
+        prompt_attention_masks,
+        original_length,
+        reward_model=None,  # 不使用reward model
+        tokenizer=None,
+        caption=captions_expanded,
+        preprocess_val=None,
+    )
+    
+    print(f"\n{'='*80}")
+    print("Sampling completed!")
+    print(f"{'='*80}\n")
+    
+    # 计算每个rollout有多少step是guess的
+    num_guess_steps = all_mock_flags.sum(dim=1).cpu().numpy()  # (total_samples,)
+    
+    # 读取已保存的图像并重新组织
+    print("Reorganizing saved images...")
+    decoded_images = []
+    rank = 0  # 单机测试时rank为0
+    for i in range(total_samples):
+        guess_count = int(num_guess_steps[i])
+        img_path = f"./images/qwenimage_{rank}_{i}_guess{guess_count}.png"
+        if os.path.exists(img_path):
+            decoded_images.append(Image.open(img_path))
+        else:
+            print(f"Warning: Image {img_path} not found!")
+    
+    print(f"Loaded {len(decoded_images)} images successfully!\n")
+    
+    # 重新组织和保存图像到指定目录
+    print("Reorganizing and saving images to output directory...")
+    rank = 0
+    for i in tqdm(range(len(decoded_images)), desc="Saving images"):
+        prompt_idx = i // args.num_generations
+        gen_idx = i % args.num_generations
+        guess_count = int(num_guess_steps[i])
+        is_mock = "guess" if all_mock_flags[i, -1] > 0.5 else "infer"
         
-        # VAE 归一化
-        latents_mean = torch.tensor(vae.config.latents_mean).view(1, 16, 1, 1, 1).to(device, torch.bfloat16)
-        latents_std = 1.0 / torch.tensor(vae.config.latents_std).view(1, 16, 1, 1, 1).to(device, torch.bfloat16)
-        latents = latents / latents_std + latents_mean
+        # 创建子目录
+        prompt_dir = os.path.join(args.output_path, f"prompt_{prompt_idx}")
+        os.makedirs(prompt_dir, exist_ok=True)
         
-        decoded_images = vae.decode(latents, return_dict=False)[0][:, :, 0]
-        images = image_processor.postprocess(decoded_images)
-
-        for i, img in enumerate(images):
-            is_mock = "guess" if i in torch.where(all_mock_flags[:, -1])[0] else "infer"
-            save_name = os.path.join(args.output_path, f"sample_{i}_{is_mock}.png")
-            img.save(save_name)
-            print(f"Saved: {save_name}")
+        # 从临时位置复制到最终位置,文件名包含guess步数
+        src_path = f"./images/qwenimage_{rank}_{i}_guess{guess_count}.png"
+        dst_path = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}_{is_mock}.png")
+        
+        if os.path.exists(src_path):
+            decoded_images[i].save(dst_path)
+        
+        if gen_idx == 0:  # 只在第一个生成时打印 caption
+            tqdm.write(f"Prompt {prompt_idx}: {captions_expanded[i]}")
+    
+    print(f"\n{'='*80}")
+    print(f"SUCCESS! All {num_prompts} prompts × {args.num_generations} generations = {total_samples} samples generated!")
+    print(f"Results saved to: {args.output_path}")
+    print(f"{'='*80}")
 
 if __name__ == "__main__":
     test_main()
