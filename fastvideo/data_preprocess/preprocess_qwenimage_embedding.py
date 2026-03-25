@@ -28,6 +28,7 @@ from tqdm import tqdm
 import re
 from diffusers import DiffusionPipeline 
 import torch.nn.functional as F
+from transformers import Qwen2_5_VLForConditionalGeneration, AutoConfig
 
 def contains_chinese(text):
     """检查字符串是否包含中文字符"""
@@ -97,7 +98,15 @@ def main(args):
         batch_size=args.train_batch_size,
         num_workers=args.dataloader_num_workers,
     )
-    pipe = DiffusionPipeline.from_pretrained("data/qwenimage", torch_dtype=torch.bfloat16)
+    # Workaround for TypeError: Qwen2_5_VLForConditionalGeneration.__init__() got an unexpected keyword argument 'offload_state_dict'
+    # This usually happens when diffusers' load_sub_model passes offload_state_dict to a transformer model that doesn't support it (like Qwen2-5-VL)
+    # in certain versions of transformers/diffusers.
+    
+    # Let's try to load the pipeline with text_encoder=None first, then load it manually
+    from transformers import Qwen2_5_VLForConditionalGeneration
+    text_encoder = Qwen2_5_VLForConditionalGeneration.from_pretrained("data/qwenimage/text_encoder", torch_dtype=torch.bfloat16)
+    pipe = DiffusionPipeline.from_pretrained("data/qwenimage", text_encoder=text_encoder, torch_dtype=torch.bfloat16)
+
     pipe = pipe.to(device)
     json_data = []
     for _, data in tqdm(enumerate(train_dataloader), disable=local_rank != 0):

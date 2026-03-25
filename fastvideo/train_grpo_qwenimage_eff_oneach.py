@@ -222,138 +222,54 @@ def run_sample_step(
                 f"run_sample_step(grpo): batch B={B} must be divisible by num_generations={num_generations}"
             )
         num_prompts = B // num_generations
-        last_step_guessed_mask = torch.zeros(B, device=z.device, dtype=torch.bool)
-        # 跟踪每个rollout累计被guess的次数
-        cumulative_guess_count = torch.zeros(B, device=z.device, dtype=torch.long)
-        # 存储上一轮每个rollout的速度（用于动量）
-        prev_velocities = torch.zeros_like(z, dtype=torch.float32)
         
         for i in progress_bar:  # Add progress bar
             sigma = sigma_schedule[i]
-            # 自适应动量权重：早期步骤使用较小权重，后期使用较大权重
-            if i < len(progress_bar) * 0.5:
-                ratio = (sigma / sigma_schedule[0])*2
-            else:
-                ratio = 1
-            momentum_weight = 0.7 + 0.3*ratio
-            # if i > len(progress_bar) * 0.5:
-            #     ratio = (1 - sigma / sigma_schedule[0])
-            # else:
-            #     ratio = 0
-            # momentum_weight = (1 - 0.5*ratio)
-            d_sigma = 0 - sigma # 到达终点 0 的距离
             timestep_value = int(sigma * 1000)
             timesteps = torch.full([B], timestep_value, device=z.device, dtype=torch.long)
             
-            # 按 prompt 分组：每组 num_generations 个 rollout；每组内独立选最多 num_guess 个去 mock
-            can_guess_mask = ~last_step_guessed_mask
-            per_prompt_num_guess = 0 if i == len(progress_bar) - 1 else args.num_guess
+            # 权重 schedule 参考 mta_auto.py
+            if i < len(progress_bar) * 0.5:
+                ratio = (sigma / sigma_schedule[0]) * 2
+            else:
+                ratio = 1
+            momentum_weight = 0.9 + 0.1 * ratio
 
-            guess_idx_chunks = []
+            # 数据结构准备
+            mock_flag = torch.zeros(B, device=z.device, dtype=torch.float32)
+            
+            # 全量前向：得到每条 rollout 的模型速度 v_all
+            transformer.eval()
+            with torch.autocast("cuda", torch.bfloat16):
+                v_all = transformer(
+                    hidden_states=z,
+                    timestep=timesteps / 1000,
+                    guidance=None,
+                    encoder_hidden_states_mask=prompt_attention_mask,
+                    encoder_hidden_states=encoder_hidden_states,
+                    img_shapes=img_shapes,
+                    txt_seq_lens=txt_seq_lens,
+                    attention_kwargs=None,
+                    return_dict=False,
+                )[0]
+            v_all_f32 = v_all.to(torch.float32)
+
+            # 组内算均值速度 v_mean，用于对模型速度做校正
+            v_final = torch.zeros_like(v_all_f32)
             for p in range(num_prompts):
                 start_idx = p * num_generations
                 end_idx = (p + 1) * num_generations
-                local_can = torch.where(can_guess_mask[start_idx:end_idx])[0] + start_idx
-                ng = min(per_prompt_num_guess, int(local_can.numel()))
-                if ng > 0:
-                    counts = cumulative_guess_count[local_can]
-                    order = torch.argsort(counts)[:ng]
-                    picked = local_can[order]
-                    cumulative_guess_count[picked] += 1
-                    guess_idx_chunks.append(picked)
+                v_mean_group = v_all_f32[start_idx:end_idx].mean(dim=0, keepdim=True)
+                # 加权和: momentum_weight*该样本模型速度 + (1-momentum_weight)*组均值速度
+                v_final[start_idx:end_idx] = momentum_weight * v_all_f32[start_idx:end_idx] + (1 - momentum_weight) * v_mean_group
 
-            if guess_idx_chunks:
-                current_guess_indices = torch.cat(guess_idx_chunks)
-            else:
-                current_guess_indices = torch.empty(0, device=z.device, dtype=torch.long)
-            
-            guessed_mask = torch.zeros(B, device=z.device, dtype=torch.bool)
-            if len(current_guess_indices) > 0:
-                guessed_mask[current_guess_indices] = True
-            infer_mask = ~guessed_mask
-            
-            # 数据结构准备
-            pred = torch.zeros_like(z)
-            mock_flag = guessed_mask.clone().to(torch.float32)
-            
-            # 推理分支
-            if infer_mask.any():
-                transformer.eval()
-                with torch.autocast("cuda", torch.bfloat16):
-                    v_infer = transformer(
-                        hidden_states=z[infer_mask],
-                        timestep=timesteps[infer_mask] / 1000,
-                        guidance=None,
-                        encoder_hidden_states_mask=prompt_attention_mask[infer_mask],
-                        encoder_hidden_states=encoder_hidden_states[infer_mask],
-                        img_shapes=img_shapes,
-                        txt_seq_lens=[txt_seq_lens[j] for j, m in enumerate(infer_mask) if m],
-                        attention_kwargs=None,
-                        return_dict=False,
-                    )[0]
-                pred[infer_mask] = v_infer.to(pred.dtype)
-                
-                # 计算推理样本的速度场 v_infer，用于后续计算平均方向
-                # 将速度场存储到完整的pred tensor中，用于按rollout计算平均
-                v_full = torch.zeros_like(z, dtype=torch.float32)
-                v_full[infer_mask] = v_infer.to(torch.float32)
-                
-                # 更新推理样本的速度记录（用于下一轮动量）
-                prev_velocities[infer_mask] = v_infer.to(torch.float32)
-                
-                # --- 按rollout维度计算每个sample的平均速度场 ---
-                # 初始化平均速度场容器 (B, ...)
-                v_mean = torch.zeros_like(z, dtype=torch.float32)
-                
-                # 遍历每个prompt，对其对应的num_generations个rollout计算平均
-                for p in range(num_prompts):
-                    start_idx = p * num_generations
-                    end_idx = (p + 1) * num_generations
-                    
-                    # 获取该prompt对应的所有rollout的mask
-                    group_infer_mask = infer_mask[start_idx:end_idx]
-                    
-                    if group_infer_mask.any():
-                        # 只对推理的样本计算平均速度场
-                        # 统计该组内有多少个infer样本
-                        offset = infer_mask[:start_idx].sum().item()
-                        count = group_infer_mask.sum().item()
-                        
-                        # 从v_infer中提取该组的速度场并计算平均
-                        group_v_mean = v_infer[offset : offset + count].mean(dim=0)
-                        v_mean[start_idx:end_idx] = group_v_mean
-                    else:
-                        # 如果整个组都没有infer（理论上不应发生），使用零向量
-                        v_mean[start_idx:end_idx] = 0.0
-                
-                # 根据平均速度场计算guess的预测终点
-                x_L_mean = z.to(torch.float32) + v_mean * d_sigma
-            else:
-                x_L_mean = z.to(torch.float32).mean(dim=0, keepdim=True).expand(B, *z.shape[1:])
-
-            # 预测分支
-            if guessed_mask.any():
-                # v_hat = (x_L_mean - x_t) / (0 - sigma)
-                # 这里的 x_L_mean 已经是按组对应的了
-                v_guess = (x_L_mean[guessed_mask] - z[guessed_mask].to(torch.float32)) / (d_sigma if abs(d_sigma) > 1e-6 else 1e-6)
-                
-                # 添加动量：将上一轮的速度以权重0.05加到当前guess的速度上
-                v_guess_with_momentum = (1 - momentum_weight) * v_guess + momentum_weight * prev_velocities[guessed_mask]
-                
-                pred[guessed_mask] = v_guess_with_momentum.to(pred.dtype)
-                
-                # 更新guess样本的速度记录（用于下一轮动量）
-                prev_velocities[guessed_mask] = v_guess_with_momentum
-            
             # 演进
-            z, pred_original, log_prob = flux_step(pred, z.to(torch.float32), args.eta, sigmas=sigma_schedule, index=i, prev_sample=None, grpo=True, sde_solver=True)
+            z, pred_original, log_prob = flux_step(v_final.to(v_all.dtype), z.to(torch.float32), args.eta, sigmas=sigma_schedule, index=i, prev_sample=None, grpo=True, sde_solver=True)
             z = z.to(torch.bfloat16)
             
             all_latents.append(z)
             all_log_probs.append(log_prob)
             all_mock_flags.append(mock_flag)
-            
-            last_step_guessed_mask = guessed_mask
 
         latents = pred_original
         all_latents = torch.stack(all_latents, dim=1)  # (batch_size, num_steps + 1, ...)
@@ -483,8 +399,8 @@ def sample_reference_model(
         
         encoder_hidden_states_padded_list.append(embed)
         prompt_attention_masks_padded_list.append(mask)
-        # txt_seq_lens使用padding后的attention mask的sum (与test_qwen_rollout.py保持一致)
-        txt_seq_lens.append(int(mask.sum().item()))
+        # txt_seq_lens使用padding后的实际长度，确保与RoPE匹配
+        txt_seq_lens.append(embed.shape[1])
     
     # 拼接成最终的tensors
     encoder_hidden_states_padded = torch.cat(encoder_hidden_states_padded_list, dim=0)
@@ -646,7 +562,6 @@ def train_one_step(
     ema_handler
 ):
     total_loss = 0.0
-    grad_norm = torch.tensor(0.0).to(device)
 
     #device = latents.device
     if args.use_group:

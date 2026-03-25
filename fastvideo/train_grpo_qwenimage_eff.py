@@ -216,15 +216,7 @@ def run_sample_step(
         all_mock_flags = []
         
         B = z.shape[0]
-        num_generations = args.num_generations
-        if B % num_generations != 0:
-            raise ValueError(
-                f"run_sample_step(grpo): batch B={B} must be divisible by num_generations={num_generations}"
-            )
-        num_prompts = B // num_generations
         last_step_guessed_mask = torch.zeros(B, device=z.device, dtype=torch.bool)
-        # 跟踪每个rollout累计被guess的次数
-        cumulative_guess_count = torch.zeros(B, device=z.device, dtype=torch.long)
         
         for i in progress_bar:  # Add progress bar
             sigma = sigma_schedule[i]
@@ -232,31 +224,20 @@ def run_sample_step(
             timestep_value = int(sigma * 1000)
             timesteps = torch.full([B], timestep_value, device=z.device, dtype=torch.long)
             
-            # 按 prompt 分组：每组 num_generations 个 rollout；每组内独立选最多 num_guess 个去 mock
+            # Masking logic
+            # 找到上一步没被猜过的样本
             can_guess_mask = ~last_step_guessed_mask
-            per_prompt_num_guess = 0 if i == len(progress_bar) - 1 else args.num_guess
-
-            guess_idx_chunks = []
-            for p in range(num_prompts):
-                start_idx = p * num_generations
-                end_idx = (p + 1) * num_generations
-                local_can = torch.where(can_guess_mask[start_idx:end_idx])[0] + start_idx
-                ng = min(per_prompt_num_guess, int(local_can.numel()))
-                if ng > 0:
-                    counts = cumulative_guess_count[local_can]
-                    order = torch.argsort(counts)[:ng]
-                    picked = local_can[order]
-                    cumulative_guess_count[picked] += 1
-                    guess_idx_chunks.append(picked)
-
-            if guess_idx_chunks:
-                current_guess_indices = torch.cat(guess_idx_chunks)
-            else:
-                current_guess_indices = torch.empty(0, device=z.device, dtype=torch.long)
+            can_guess_indices = torch.where(can_guess_mask)[0]
+            
+            # 从中随机选 m 个来猜
+            num_guess = min(args.num_guess, len(can_guess_indices))
+            if i == len(progress_bar) - 1:
+                num_guess = 0 # 最后一步不猜
+            guess_indices_in_can_guess = torch.randperm(len(can_guess_indices), device=z.device)[:num_guess]
+            current_guess_indices = can_guess_indices[guess_indices_in_can_guess]
             
             guessed_mask = torch.zeros(B, device=z.device, dtype=torch.bool)
-            if len(current_guess_indices) > 0:
-                guessed_mask[current_guess_indices] = True
+            guessed_mask[current_guess_indices] = True
             infer_mask = ~guessed_mask
             
             # 数据结构准备
@@ -286,6 +267,9 @@ def run_sample_step(
                 v_full[infer_mask] = v_infer.to(torch.float32)
                 
                 # --- 按rollout维度计算每个sample的平均速度场 ---
+                num_generations = args.num_generations
+                num_prompts = B // num_generations
+                
                 # 初始化平均速度场容器 (B, ...)
                 v_mean = torch.zeros_like(z, dtype=torch.float32)
                 
@@ -515,13 +499,9 @@ def sample_reference_model(
             images = vae.decode(latents_unpacked, return_dict=False)[0][:, :, 0]
             decoded_images = image_processor.postprocess(images)
     
-    # 计算每个rollout有多少step是guess的
-    num_guess_steps = all_mock_flags_tensor.sum(dim=1).cpu().numpy()  # (B,)
-    
-    # 保存所有图像,文件名包含guess步数统计
+    # 保存所有图像
     for idx in range(B):
-        guess_count = int(num_guess_steps[idx])
-        decoded_images[idx].save(f"./images/qwenimage_{rank}_{idx}_guess{guess_count}.png")
+        decoded_images[idx].save(f"./images/qwenimage_{rank}_{idx}.png")
     
     # 批量计算reward
     if args.use_hpsv2:
@@ -540,8 +520,7 @@ def sample_reference_model(
     if args.use_hpsv3:
         with torch.no_grad():
             for idx in range(B):
-                guess_count = int(num_guess_steps[idx])
-                hps_score = reward_model.reward([f"./images/qwenimage_{rank}_{idx}_guess{guess_count}.png"], [caption[idx]])
+                hps_score = reward_model.reward([f"./images/qwenimage_{rank}_{idx}.png"], [caption[idx]])
                 if hps_score.ndim == 2:
                     hps_score = hps_score[:,0]
                 all_rewards.append(hps_score)
@@ -577,21 +556,15 @@ def sample_reference_model(
             return scores
         
         for idx in range(B):
-            guess_count = int(num_guess_steps[idx])
-            pil_images = [Image.open(f"./images/qwenimage_{rank}_{idx}_guess{guess_count}.png")]
+            pil_images = [Image.open(f"./images/qwenimage_{rank}_{idx}.png")]
             score = calc_probs(tokenizer, reward_model, caption[idx], pil_images, device)
             all_rewards.append(score)
 
     all_latents = torch.cat(all_latents, dim=0)
     all_log_probs = torch.cat(all_log_probs, dim=0)
     all_mock_flags = torch.cat(all_mock_flags, dim=0)
+    all_rewards = torch.cat(all_rewards, dim=0)
     all_txt_seq_lens = torch.cat(all_txt_seq_lens, dim=0)
-    
-    # 如果没有使用reward model,创建dummy rewards
-    if len(all_rewards) == 0:
-        all_rewards = torch.zeros(B, device=device, dtype=torch.float32)
-    else:
-        all_rewards = torch.cat(all_rewards, dim=0)
     
     return all_rewards, all_latents, all_log_probs, sigma_schedule, all_txt_seq_lens, all_mock_flags
 
@@ -1365,7 +1338,7 @@ if __name__ == "__main__":
         "--num_guess",
         type=int,
         default=4,
-        help="per prompt: max rollouts to mock-guess each denoising step (within that prompt's group of num_generations)",
+        help="number of samples for guessing per step",
     )
     
 
