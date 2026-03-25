@@ -6,7 +6,7 @@ mkdir -p data/outputs/efficient_auto
 
 # 使用 4 卡训练 (--nproc_per_node=4)
 # 调整 gradient_accumulation_steps 为 24 以保持总 Batch Size 为 96 (4 * 1 * 24)
-torchrun --nproc_per_node=4 --master_port 19003 \
+torchrun --nproc_per_node=8 --master_port 19003 \
     fastvideo/train_grpo_qwenimage_eff_mta_auto.py \
     --seed 42 \
     --pretrained_model_name_or_path data/qwenimage \
