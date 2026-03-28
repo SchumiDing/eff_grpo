@@ -1,14 +1,20 @@
+export WANDB_MODE=disabled
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+export LD_LIBRARY_PATH=/mnt/shared-storage-user/mineru4s/dingruiyi/share/cuda-12.8/lib64:$LD_LIBRARY_PATH
+export RANK=0
+export WORLD_SIZE=4
 
 GPU_NUM=4
 MODEL_PATH="data/qwenimage"
 OUTPUT_DIR_PREFIX="data/qwenimage/rl_embeddings"
 
 prompt_dirs=(
-    "/mnt/shared-storage-user/mineru4s/dingruiyi/hpdv2_test/benchmark/anime.txt"
-    "/mnt/shared-storage-user/mineru4s/dingruiyi/hpdv2_test/benchmark/concept-art.txt"
-    "/mnt/shared-storage-user/mineru4s/dingruiyi/hpdv2_test/benchmark/drawbench.txt"
-    "/mnt/shared-storage-user/mineru4s/dingruiyi/hpdv2_test/benchmark/paintings.txt"
-    "/mnt/shared-storage-user/mineru4s/dingruiyi/hpdv2_test/benchmark/photo.txt"
+    # "/mnt/shared-storage-user/mineru4s/dingruiyi/hpdv2_test/benchmark/anime.txt"
+    # "/mnt/shared-storage-user/mineru4s/dingruiyi/hpdv2_test/benchmark/concept-art.txt"
+    # "/mnt/shared-storage-user/mineru4s/dingruiyi/hpdv2_test/benchmark/drawbench.txt"
+    # "/mnt/shared-storage-user/mineru4s/dingruiyi/hpdv2_test/benchmark/paintings.txt"
+    # "/mnt/shared-storage-user/mineru4s/dingruiyi/hpdv2_test/benchmark/photo.txt"
+    "/mnt/shared-storage-user/mineru4s/dingruiyi/DanceGRPO/assets/hpdv2.txt"
 )
 
 for prompt_dir in "${prompt_dirs[@]}"; do

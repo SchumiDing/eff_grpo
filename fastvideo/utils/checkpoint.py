@@ -4,6 +4,7 @@ import json
 import os
 
 import torch
+import torch.distributed as dist
 import torch.distributed.checkpoint as dist_cp
 from peft import get_peft_model_state_dict
 from safetensors.torch import load_file, save_file
@@ -25,6 +26,7 @@ def save_checkpoint_optimizer(model,
                               output_dir,
                               step,
                               discriminator=False):
+    dist.barrier()
     with FSDP.state_dict_type(
             model,
             StateDictType.FULL_STATE_DICT,
@@ -36,6 +38,7 @@ def save_checkpoint_optimizer(model,
             model,
             optimizer,
         )
+    dist.barrier()
 
     # todo move to get_state_dict
     save_dir = os.path.join(output_dir, f"checkpoint-{step}")
@@ -64,12 +67,14 @@ def save_checkpoint_optimizer(model,
 
 def save_checkpoint(transformer, rank, output_dir, step, epoch):
     main_print(f"--> saving checkpoint at step {step}")
+    dist.barrier()
     with FSDP.state_dict_type(
             transformer,
             StateDictType.FULL_STATE_DICT,
             FullStateDictConfig(offload_to_cpu=True, rank0_only=True),
     ):
         cpu_state = transformer.state_dict()
+    dist.barrier()
     # todo move to get_state_dict
     if rank <= 0:
         save_dir = os.path.join(output_dir, f"checkpoint-{step}-{epoch}")
@@ -256,6 +261,7 @@ def resume_training(model, optimizer, checkpoint_dir, discriminator=False):
 
 def save_lora_checkpoint(transformer, optimizer, rank, output_dir, step,
                          pipeline, epoch):
+    dist.barrier()
     with FSDP.state_dict_type(
             transformer,
             StateDictType.FULL_STATE_DICT,
@@ -266,6 +272,7 @@ def save_lora_checkpoint(transformer, optimizer, rank, output_dir, step,
             transformer,
             optimizer,
         )
+    dist.barrier()
 
     if rank <= 0:
         save_dir = os.path.join(output_dir, f"lora-checkpoint-{step}-{epoch}")

@@ -16,6 +16,7 @@
 
 # 导入所有必要的模块 (与原脚本相同)
 from train_grpo_qwenimage_eff import *
+from fastvideo.utils.rollout_image_dir import rollout_image_file
 
 def run_sample_step_noise(
         args,
@@ -280,7 +281,7 @@ def sample_reference_model_noise(
     # 保存所有图像,文件名包含guess步数统计和noise标记
     for idx in range(B):
         guess_count = int(num_guess_steps[idx])
-        decoded_images[idx].save(f"./images/qwenimage_{rank}_{idx}_guess{guess_count}_noise.png")
+        decoded_images[idx].save(rollout_image_file(f"qwenimage_{rank}_{idx}_guess{guess_count}_noise.png"))
     
     # 批量计算reward
     if args.use_hpsv2:
@@ -300,7 +301,7 @@ def sample_reference_model_noise(
         with torch.no_grad():
             for idx in range(B):
                 guess_count = int(num_guess_steps[idx])
-                hps_score = reward_model.reward([f"./images/qwenimage_{rank}_{idx}_guess{guess_count}_noise.png"], [caption[idx]])
+                hps_score = reward_model.reward([rollout_image_file(f"qwenimage_{rank}_{idx}_guess{guess_count}_noise.png")], [caption[idx]])
                 if hps_score.ndim == 2:
                     hps_score = hps_score[:,0]
                 all_rewards.append(hps_score)
@@ -337,7 +338,7 @@ def sample_reference_model_noise(
         
         for idx in range(B):
             guess_count = int(num_guess_steps[idx])
-            pil_images = [Image.open(f"./images/qwenimage_{rank}_{idx}_guess{guess_count}_noise.png")]
+            pil_images = [Image.open(rollout_image_file(f"qwenimage_{rank}_{idx}_guess{guess_count}_noise.png"))]
             score = calc_probs(tokenizer, reward_model, caption[idx], pil_images, device)
             all_rewards.append(score)
 

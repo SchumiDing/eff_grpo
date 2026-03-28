@@ -23,6 +23,7 @@ import gc
 
 # 导入 FSDP 相关组件
 from fastvideo.utils.fsdp_util_qwenimage import fsdp_wrapper, FSDPConfig
+from fastvideo.utils.rollout_image_dir import rollout_image_file
 from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
 from torch.distributed.fsdp import StateDictType, FullStateDictConfig
 
@@ -53,7 +54,7 @@ def test_comparison():
     parser.add_argument(
         "--num_guess",
         type=int,
-        default=6,
+        default=4,
         help="Per prompt: max rollouts to mock-guess each step (within each prompt's num_generations group)",
     )
     parser.add_argument("--sampling_steps", type=int, default=20)
@@ -62,15 +63,28 @@ def test_comparison():
     parser.add_argument("--eta", type=float, default=0.3)
     parser.add_argument("--shift", type=float, default=3.0)
     parser.add_argument("--output_path", type=str, default="./test_results_comparison")
+    parser.add_argument(
+        "--rollout_image_dir",
+        type=str,
+        default=None,
+        help="Scratch dir for decoded rollout PNGs (before move to --output_path). Default ./images. "
+        "Override with env DANCEGRPO_ROLLOUT_IMAGE_DIR to avoid clashing with parallel training.",
+    )
     parser.add_argument("--init_same_noise", action="store_true", default=False, help="Use same noise for all samples in a group")
     parser.add_argument("--start_idx", type=int, default=0, help="Start index of embeddings to load")
     parser.add_argument("--end_idx", type=int, default=None, help="End index of embeddings to load (None means all)")
     parser.add_argument("--batch_size", type=int, default=10, help="Number of prompts per batch")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
-    parser.add_argument("--methods", type=str, nargs='+', default=["original", "original_14","momentum", "reuse", "auto"], 
+    parser.add_argument("--methods", type=str, nargs='+', default=["original", "original_14", "reuse", "auto"], 
                         help="Methods to run: original, original_14, momentum, reuse, auto")
     parser.add_argument("--fsdp_sharding_strategy", type=str, default="SHARD_GRAD_OP", help="FSDP sharding strategy")
     args = parser.parse_args()
+
+    rollout_dir = args.rollout_image_dir or os.environ.get("DANCEGRPO_ROLLOUT_IMAGE_DIR", "./images")
+    rollout_dir = os.path.abspath(os.path.expanduser(os.path.normpath(rollout_dir)))
+    os.makedirs(rollout_dir, exist_ok=True)
+    os.environ["DANCEGRPO_ROLLOUT_IMAGE_DIR"] = rollout_dir
+
     eq_sampling_steps = int(args.sampling_steps * (args.num_generations-args.num_guess)/args.num_generations + 0.5 )
 
     # 初始化分布式环境
@@ -90,6 +104,8 @@ def test_comparison():
     # 设置随机种子
     set_seed(args.seed + rank)
     print(f"Random seed set to: {args.seed + rank} for rank {rank}")
+    if rank == 0:
+        print(f"Rollout image scratch dir (DANCEGRPO_ROLLOUT_IMAGE_DIR): {os.environ.get('DANCEGRPO_ROLLOUT_IMAGE_DIR', './images')}")
 
     os.makedirs(args.output_path, exist_ok=True)
     
@@ -272,7 +288,7 @@ def test_comparison():
         for local_idx in range(n):
             prompt_idx = start_prompt_idx + local_idx // g
             gen_idx = local_idx % g
-            src = f"./images/qwenimage_{current_rank}_{local_idx}.png"
+            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}.png")
             prompt_dir = os.path.join(args.output_path, "original", f"prompt_{prompt_idx}")
             os.makedirs(prompt_dir, exist_ok=True)
             dst = os.path.join(prompt_dir, f"gen_{gen_idx}.png")
@@ -288,7 +304,7 @@ def test_comparison():
             prompt_idx = start_prompt_idx + local_idx // g
             gen_idx = local_idx % g
             guess_count = int(mock_flag_sums[local_idx])
-            src = f"./images/qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png"
+            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png")
             prompt_dir = os.path.join(args.output_path, "mean_direction", f"prompt_{prompt_idx}")
             os.makedirs(prompt_dir, exist_ok=True)
             dst = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}.png")
@@ -304,7 +320,7 @@ def test_comparison():
             prompt_idx = start_prompt_idx + local_idx // g
             gen_idx = local_idx % g
             guess_count = int(mock_flag_sums[local_idx])
-            src = f"./images/qwenimage_{current_rank}_{local_idx}_guess{guess_count}_noise.png"
+            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_guess{guess_count}_noise.png")
             prompt_dir = os.path.join(args.output_path, "noise", f"prompt_{prompt_idx}")
             os.makedirs(prompt_dir, exist_ok=True)
             dst = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}.png")
@@ -320,7 +336,7 @@ def test_comparison():
             prompt_idx = start_prompt_idx + local_idx // g
             gen_idx = local_idx % g
             guess_count = int(mock_flag_sums[local_idx])
-            src = f"./images/qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png"
+            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png")
             prompt_dir = os.path.join(args.output_path, "momentum", f"prompt_{prompt_idx}")
             os.makedirs(prompt_dir, exist_ok=True)
             dst = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}.png")
@@ -336,7 +352,7 @@ def test_comparison():
             prompt_idx = start_prompt_idx + local_idx // g
             gen_idx = local_idx % g
             guess_count = int(mock_flag_sums[local_idx])
-            src = f"./images/qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png"
+            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png")
             prompt_dir = os.path.join(args.output_path, "reuse", f"prompt_{prompt_idx}")
             os.makedirs(prompt_dir, exist_ok=True)
             dst = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}.png")
@@ -352,7 +368,7 @@ def test_comparison():
             prompt_idx = start_prompt_idx + local_idx // g
             gen_idx = local_idx % g
             guess_count = int(mock_flag_sums[local_idx])
-            src = f"./images/qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png"
+            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png")
             prompt_dir = os.path.join(args.output_path, "auto", f"prompt_{prompt_idx}")
             os.makedirs(prompt_dir, exist_ok=True)
             dst = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}.png")
@@ -365,7 +381,7 @@ def test_comparison():
         for local_idx in range(n):
             prompt_idx = start_prompt_idx + local_idx // g
             gen_idx = local_idx % g
-            src = f"./images/qwenimage_{current_rank}_{local_idx}.png"
+            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}.png")
             prompt_dir = os.path.join(args.output_path, "original_14", f"prompt_{prompt_idx}")
             os.makedirs(prompt_dir, exist_ok=True)
             dst = os.path.join(prompt_dir, f"gen_{gen_idx}.png")
@@ -378,7 +394,7 @@ def test_comparison():
         for local_idx in range(n):
             prompt_idx = start_prompt_idx + local_idx // g
             gen_idx = local_idx % g
-            src = f"./images/qwenimage_{current_rank}_{local_idx}_oneach14.png"
+            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_oneach14.png")
             prompt_dir = os.path.join(args.output_path, "oneach_14", f"prompt_{prompt_idx}")
             os.makedirs(prompt_dir, exist_ok=True)
             dst = os.path.join(prompt_dir, f"gen_{gen_idx}.png")
@@ -438,6 +454,42 @@ def test_comparison():
                 batch_num_prompts = end_local_idx - start_local_idx
                 start_prompt_idx = args.start_idx + rank * per_rank + start_local_idx
                 
+                # 检查是否已生成
+                need_generate = False
+                for i in range(start_local_idx, end_local_idx):
+                    for gen_idx in range(args.num_generations):
+                        prompt_idx = start_prompt_idx + (i - start_local_idx)
+                        dst = os.path.join(args.output_path, "oneach_14", f"prompt_{prompt_idx}", f"gen_{gen_idx}.png")
+                        if not os.path.isfile(dst):
+                            need_generate = True
+                            break
+                    if need_generate: break
+                
+                if not need_generate:
+                    if rank == 0:
+                        print(f"[oneach_14] Batch {batch_idx + 1} images already exist. Recomputing rewards...")
+                    
+                    batch_rewards_list = []
+                    for i in range(start_local_idx, end_local_idx):
+                        for gen_idx in range(args.num_generations):
+                            prompt_idx = start_prompt_idx + (i - start_local_idx)
+                            img_path = os.path.join(args.output_path, "oneach_14", f"prompt_{prompt_idx}", f"gen_{gen_idx}.png")
+                            from PIL import Image
+                            img = Image.open(img_path).convert("RGB")
+                            image_input = preprocess_val(img).unsqueeze(0).to(device)
+                            text_input = tokenizer([all_captions[i]]).to(device)
+                            with torch.no_grad():
+                                with torch.amp.autocast('cuda'):
+                                    outputs = hpsv2_model(image_input, text_input)
+                                    hps_score = torch.diagonal(outputs["image_features"] @ outputs["text_features"].T)
+                                    batch_rewards_list.append(hps_score)
+                    
+                    batch_rewards = torch.cat(batch_rewards_list)
+                    results["oneach_14"]["rewards"].append(batch_rewards.cpu())
+                    results["oneach_14"]["log_probs"].append(torch.zeros(batch_num_prompts * args.num_generations, 1).cpu())
+                    results["oneach_14"]["txt_seq_lens"].append(torch.zeros(batch_num_prompts * args.num_generations).cpu())
+                    continue
+
                 if rank == 0:
                     print(f"[oneach_14] Processing batch {batch_idx + 1}/{num_batches} (prompts {start_prompt_idx}-{start_prompt_idx + batch_num_prompts - 1})...")
                 
@@ -497,7 +549,7 @@ def test_comparison():
                         images = vae.decode(latents_unpacked, return_dict=False)[0][:, :, 0]
                         decoded_images = image_processor.postprocess(images)
                         for idx in range(B):
-                            decoded_images[idx].save(f"./images/qwenimage_{current_rank}_{idx}_oneach14.png")
+                            decoded_images[idx].save(rollout_image_file(f"qwenimage_{current_rank}_{idx}_oneach14.png"))
 
                 all_rewards = []
                 with torch.no_grad():
@@ -565,6 +617,106 @@ def test_comparison():
             original_length = torch.tensor(original_length_list).to(device)
             
             # 运行采样
+            need_generate = False
+            for i in range(start_local_idx, end_local_idx):
+                for gen_idx in range(args.num_generations):
+                    prompt_idx = start_prompt_idx + (i - start_local_idx)
+                    # 确定预期的文件名
+                    if not has_mock_flags:
+                        if method == "oneach_14":
+                            dst = os.path.join(args.output_path, method, f"prompt_{prompt_idx}", f"gen_{gen_idx}.png")
+                        elif method == "original_14":
+                            dst = os.path.join(args.output_path, "original_14", f"prompt_{prompt_idx}", f"gen_{gen_idx}.png")
+                        else: # original
+                            dst = os.path.join(args.output_path, "original", f"prompt_{prompt_idx}", f"gen_{gen_idx}.png")
+                    else:
+                        # 对于带有 guess 的方法，由于不知道 guess 步数，我们检查目录是否存在且包含 png
+                        prompt_dir = os.path.join(args.output_path, method, f"prompt_{prompt_idx}")
+                        dst = None
+                        if os.path.isdir(prompt_dir):
+                            files = os.listdir(prompt_dir)
+                            for f in files:
+                                if f.startswith(f"gen_{gen_idx}_") and f.endswith(".png"):
+                                    dst = os.path.join(prompt_dir, f)
+                                    break
+                    
+                    if dst is None or not os.path.isfile(dst):
+                        need_generate = True
+                        break
+                if need_generate:
+                    break
+
+            if not need_generate:
+                if rank == 0:
+                    print(f"[{method}] All images for batch {batch_idx + 1} already exist. Skipping generation and recomputing rewards...")
+                
+                # 重新计算 reward
+                batch_rewards_list = []
+                for i in range(start_local_idx, end_local_idx):
+                    for gen_idx in range(args.num_generations):
+                        prompt_idx = start_prompt_idx + (i - start_local_idx)
+                        prompt_dir = os.path.join(args.output_path, method, f"prompt_{prompt_idx}")
+                        
+                        # 找到对应的图片文件
+                        img_path = None
+                        if not has_mock_flags:
+                            img_path = os.path.join(prompt_dir, f"gen_{gen_idx}.png")
+                        else:
+                            files = os.listdir(prompt_dir)
+                            for f in files:
+                                if f.startswith(f"gen_{gen_idx}_") and f.endswith(".png"):
+                                    img_path = os.path.join(prompt_dir, f)
+                                    # 提取 guess 步数 (可选，如果需要恢复 mock_flags)
+                                    break
+                        
+                        from PIL import Image
+                        img = Image.open(img_path).convert("RGB")
+                        image_input = preprocess_val(img).unsqueeze(0).to(device)
+                        text_input = tokenizer([all_captions[i]]).to(device)
+                        with torch.no_grad():
+                            with torch.amp.autocast('cuda'):
+                                outputs = hpsv2_model(image_input, text_input)
+                                hps_score = torch.diagonal(outputs["image_features"] @ outputs["text_features"].T)
+                                batch_rewards_list.append(hps_score)
+                
+                batch_rewards = torch.cat(batch_rewards_list)
+                results[method]["rewards"].append(batch_rewards.cpu())
+                
+                # 如果是带 flags 的方法，我们还需要尝试从文件名恢复 guess 步数，以便后续统计
+                if has_mock_flags:
+                    mock_flags_list = []
+                    for i in range(start_local_idx, end_local_idx):
+                        for gen_idx in range(args.num_generations):
+                            prompt_idx = start_prompt_idx + (i - start_local_idx)
+                            prompt_dir = os.path.join(args.output_path, method, f"prompt_{prompt_idx}")
+                            files = os.listdir(prompt_dir)
+                            guess_val = 0
+                            for f in files:
+                                if f.startswith(f"gen_{gen_idx}_guess") and f.endswith(".png"):
+                                    # 提取 guess 数字，例如 gen_0_guess9.png -> 9
+                                    try:
+                                        guess_val = int(f.split("guess")[-1].split(".")[0])
+                                    except:
+                                        guess_val = 0
+                                    break
+                            # 构造一个 dummy mock_flags，使其 sum 等于 guess_val
+                            # 假设采样步数是 current_sampling_steps
+                            dummy_flags = torch.zeros(current_sampling_steps, dtype=torch.float32)
+                            if guess_val > 0:
+                                dummy_flags[:min(guess_val, current_sampling_steps)] = 1.0
+                            mock_flags_list.append(dummy_flags.unsqueeze(0))
+                    
+                    batch_mock_flags = torch.cat(mock_flags_list, dim=0)
+                    results[method]["mock_flags"].append(batch_mock_flags.cpu())
+                
+                # 对于跳过的 batch，我们也需要添加 dummy log_probs 和 txt_seq_lens 以保持长度一致
+                B_total = batch_num_prompts * args.num_generations
+                results[method]["log_probs"].append(torch.zeros(B_total, 1).cpu()) # dummy
+                results[method]["txt_seq_lens"].append(torch.zeros(B_total).cpu()) # dummy
+                
+                continue
+
+            # 运行采样 (原有逻辑)
             if has_mock_flags:
                 batch_rewards, batch_latents, batch_log_probs, _, batch_txt_seq_lens, batch_mock_flags = sample_fn(
                     mock_args,
@@ -646,7 +798,7 @@ def test_comparison():
     if world_size > 1:
         dist.barrier()
         for method in methods_to_run:
-            has_flags = (method != "original")
+            has_flags = "mock_flags" in results[method] and len(results[method]["mock_flags"]) > 0
             
             # 汇总 rewards
             local_rewards = results[method]["rewards"].to(device)
@@ -677,12 +829,12 @@ def test_comparison():
     # ... (原有统计逻辑，但需保证数据长度匹配)
 
     
-    # 计算guess步数统计
-    num_guess_steps_mean = results["mean_direction"]["mock_flags"].sum(dim=1).cpu().numpy() if "mean_direction" in methods_to_run else None
-    num_guess_steps_noise = results["noise"]["mock_flags"].sum(dim=1).cpu().numpy() if "noise" in methods_to_run else None
-    num_guess_steps_momentum = results["momentum"]["mock_flags"].sum(dim=1).cpu().numpy() if "momentum" in methods_to_run else None
-    num_guess_steps_reuse = results["reuse"]["mock_flags"].sum(dim=1).cpu().numpy() if "reuse" in methods_to_run else None
-    num_guess_steps_auto = results["auto"]["mock_flags"].sum(dim=1).cpu().numpy() if "auto" in methods_to_run else None
+    # 计算guess步数统计 (确保这些方法在结果中且有 mock_flags)
+    num_guess_steps_mean = results["mean_direction"]["mock_flags"].sum(dim=1).cpu().numpy() if ("mean_direction" in methods_to_run and "mock_flags" in results["mean_direction"]) else None
+    num_guess_steps_noise = results["noise"]["mock_flags"].sum(dim=1).cpu().numpy() if ("noise" in methods_to_run and "mock_flags" in results["noise"]) else None
+    num_guess_steps_momentum = results["momentum"]["mock_flags"].sum(dim=1).cpu().numpy() if ("momentum" in methods_to_run and "mock_flags" in results["momentum"]) else None
+    num_guess_steps_reuse = results["reuse"]["mock_flags"].sum(dim=1).cpu().numpy() if ("reuse" in methods_to_run and "mock_flags" in results["reuse"]) else None
+    num_guess_steps_auto = results["auto"]["mock_flags"].sum(dim=1).cpu().numpy() if ("auto" in methods_to_run and "mock_flags" in results["auto"]) else None
     
     # 9. 计算和比较HPSv2 rewards
     if rank == 0:

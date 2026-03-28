@@ -12,6 +12,7 @@
 import argparse
 import math
 import os
+import json
 from pathlib import Path
 from fastvideo.utils.parallel_states import (
     initialize_sequence_parallel_state,
@@ -21,6 +22,7 @@ from fastvideo.utils.parallel_states import (
 )
 from fastvideo.utils.communications import sp_parallel_dataloader_wrapper
 from fastvideo.utils.validation import log_validation
+from fastvideo.utils.rollout_image_dir import rollout_image_file
 import time
 from torch.utils.data import DataLoader
 import torch
@@ -229,10 +231,13 @@ def run_sample_step(
         prev_velocities = torch.zeros_like(z, dtype=torch.float32)
         
         for i in progress_bar:  # Add progress bar
+            # # 前半段正向修正，后半段反向修正
             sigma = sigma_schedule[i]
+            # ratio = (sigma / sigma_schedule[0])*2
+            # momentum_weight = 0.8 + 0.2*ratio
             # 自适应动量权重：早期步骤使用较小权重，后期使用较大权重
             if i < len(progress_bar) * 0.5:
-                ratio = (sigma / sigma_schedule[0])*2
+                ratio = (sigma / sigma_schedule[0]) * 2
             else:
                 ratio = 1
             momentum_weight = 0.7 + 0.3*ratio
@@ -247,7 +252,7 @@ def run_sample_step(
             
             # 按 prompt 分组：每组 num_generations 个 rollout；每组内独立选最多 num_guess 个去 mock
             can_guess_mask = ~last_step_guessed_mask
-            per_prompt_num_guess = 0 if i == len(progress_bar) - 1 else args.num_guess
+            per_prompt_num_guess = 0 if i == args.sampling_steps - 1 else args.num_guess
 
             guess_idx_chunks = []
             for p in range(num_prompts):
@@ -337,7 +342,7 @@ def run_sample_step(
                 # 这里的 x_L_mean 已经是按组对应的了
                 v_guess = (x_L_mean[guessed_mask] - z[guessed_mask].to(torch.float32)) / (d_sigma if abs(d_sigma) > 1e-6 else 1e-6)
                 
-                # 添加动量：将上一轮的速度以权重0.05加到当前guess的速度上
+                # 添加动量：将上一轮的速度以权重0.05加到当前guess的速度上， 在后半段，momenta_weight > 1, 则变成负向修正
                 v_guess_with_momentum = (1 - momentum_weight) * v_guess + momentum_weight * prev_velocities[guessed_mask]
                 
                 pred[guessed_mask] = v_guess_with_momentum.to(pred.dtype)
@@ -494,7 +499,13 @@ def sample_reference_model(
     img_shapes = [[(1, h // 8 // 2, w // 8// 2)]]
     
     grpo_sample = True
-    progress_bar = tqdm(range(0, sample_steps), desc="Sampling Progress")
+    _local_rank = int(os.environ.get("LOCAL_RANK", "0"))
+    progress_bar = tqdm(
+        range(0, sample_steps),
+        desc="Sampling Progress",
+        disable=_local_rank > 0,
+        leave=False,
+    )
     
     # 一次性推理所有rollout
     with torch.no_grad():
@@ -544,7 +555,7 @@ def sample_reference_model(
     # 保存所有图像,文件名包含guess步数统计
     for idx in range(B):
         guess_count = int(num_guess_steps[idx])
-        decoded_images[idx].save(f"./images/qwenimage_{rank}_{idx}_guess{guess_count}.png")
+        decoded_images[idx].save(rollout_image_file(f"qwenimage_{rank}_{idx}_guess{guess_count}.png"))
     
     # 批量计算reward
     if args.use_hpsv2:
@@ -564,7 +575,7 @@ def sample_reference_model(
         with torch.no_grad():
             for idx in range(B):
                 guess_count = int(num_guess_steps[idx])
-                hps_score = reward_model.reward([f"./images/qwenimage_{rank}_{idx}_guess{guess_count}.png"], [caption[idx]])
+                hps_score = reward_model.reward([rollout_image_file(f"qwenimage_{rank}_{idx}_guess{guess_count}.png")], [caption[idx]])
                 if hps_score.ndim == 2:
                     hps_score = hps_score[:,0]
                 all_rewards.append(hps_score)
@@ -601,7 +612,7 @@ def sample_reference_model(
         
         for idx in range(B):
             guess_count = int(num_guess_steps[idx])
-            pil_images = [Image.open(f"./images/qwenimage_{rank}_{idx}_guess{guess_count}.png")]
+            pil_images = [Image.open(rollout_image_file(f"qwenimage_{rank}_{idx}_guess{guess_count}.png"))]
             score = calc_probs(tokenizer, reward_model, caption[idx], pil_images, device)
             all_rewards.append(score)
 
@@ -702,11 +713,7 @@ def train_one_step(
         "original_length": original_length,
     }
     gathered_reward = gather_tensor(samples["rewards"])
-    if dist.get_rank()==0:
-        print("gathered_reward", gathered_reward)
-        with open('./reward.txt', 'a') as f: 
-            f.write(f"{gathered_reward.mean().item()}\n")
-
+    avg_reward = gathered_reward.mean().item()
     #计算advantage
     if args.use_group:
         n = len(samples["rewards"]) // (args.num_generations)
@@ -801,7 +808,7 @@ def train_one_step(
             print("advantage", sample["advantages"].item())
             print("final loss", loss.item())
         dist.barrier()
-    return total_loss, grad_norm.item()
+    return total_loss, grad_norm.item(), avg_reward
 
 
 def main(args):
@@ -1005,9 +1012,11 @@ def main(args):
         assert NotImplementedError("resume_from_checkpoint is not supported now.")
         # TODO
 
+    train_bar_total = args.max_train_steps if args.max_train_steps is not None else 100000
     progress_bar = tqdm(
-        range(0, 100000),
-        initial=init_steps,
+        range(0, train_bar_total),
+        initial=min(init_steps, train_bar_total),
+        total=train_bar_total,
         desc="Steps",
         # Only show the progress bar once on each machine.
         disable=local_rank > 0,
@@ -1035,7 +1044,7 @@ def main(args):
                 dist.barrier()
             if step > (args.max_train_steps+1):
                 break
-            loss, grad_norm = train_one_step(
+            loss, grad_norm, avg_reward = train_one_step(
                 args,
                 device, 
                 transformer,
@@ -1064,22 +1073,32 @@ def main(args):
             progress_bar.set_postfix(
                 {
                     "loss": f"{loss:.4f}",
+                    "reward": f"{avg_reward:.4f}",
                     "step_time": f"{step_time:.2f}s",
                     "grad_norm": grad_norm,
                 }
             )
             progress_bar.update(1)
             if rank <= 0:
-                wandb.log(
-                    {
-                        "train_loss": loss,
-                        "learning_rate": lr_scheduler.get_last_lr()[0],
-                        "step_time": step_time,
-                        "avg_step_time": avg_step_time,
-                        "grad_norm": grad_norm,
-                    },
-                    step=step,
-                )
+                log_data = {
+                    "step": step,
+                    "train_loss": loss,
+                    "avg_reward": avg_reward,
+                    "learning_rate": lr_scheduler.get_last_lr()[0],
+                    "step_time": step_time,
+                    "avg_step_time": avg_step_time,
+                    "grad_norm": grad_norm,
+                    "epoch": epoch,
+                }
+                
+                # Log to WandB
+                wandb.log(log_data, step=step)
+                
+                # Log to logging.jsonl
+                if args.output_dir is not None:
+                    log_file = os.path.join(args.output_dir, "logging.jsonl")
+                    with open(log_file, "a") as f:
+                        f.write(json.dumps(log_data) + "\n")
 
 
 

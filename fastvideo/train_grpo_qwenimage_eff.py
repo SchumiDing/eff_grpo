@@ -21,6 +21,7 @@ from fastvideo.utils.parallel_states import (
 )
 from fastvideo.utils.communications import sp_parallel_dataloader_wrapper
 from fastvideo.utils.validation import log_validation
+from fastvideo.utils.rollout_image_dir import rollout_image_file
 import time
 from torch.utils.data import DataLoader
 import torch
@@ -501,7 +502,7 @@ def sample_reference_model(
     
     # 保存所有图像
     for idx in range(B):
-        decoded_images[idx].save(f"./images/qwenimage_{rank}_{idx}.png")
+        decoded_images[idx].save(rollout_image_file(f"qwenimage_{rank}_{idx}.png"))
     
     # 批量计算reward
     if args.use_hpsv2:
@@ -520,7 +521,7 @@ def sample_reference_model(
     if args.use_hpsv3:
         with torch.no_grad():
             for idx in range(B):
-                hps_score = reward_model.reward([f"./images/qwenimage_{rank}_{idx}.png"], [caption[idx]])
+                hps_score = reward_model.reward([rollout_image_file(f"qwenimage_{rank}_{idx}.png")], [caption[idx]])
                 if hps_score.ndim == 2:
                     hps_score = hps_score[:,0]
                 all_rewards.append(hps_score)
@@ -556,7 +557,7 @@ def sample_reference_model(
             return scores
         
         for idx in range(B):
-            pil_images = [Image.open(f"./images/qwenimage_{rank}_{idx}.png")]
+            pil_images = [Image.open(rollout_image_file(f"qwenimage_{rank}_{idx}.png"))]
             score = calc_probs(tokenizer, reward_model, caption[idx], pil_images, device)
             all_rewards.append(score)
 
