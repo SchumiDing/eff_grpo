@@ -240,7 +240,7 @@ def run_sample_step(
                 ratio = (sigma / sigma_schedule[0]) * 2
             else:
                 ratio = 1
-            momentum_weight = 0.7 + 0.3*ratio
+            momentum_weight = 0.5 + 0.5*ratio
             # if i > len(progress_bar) * 0.5:
             #     ratio = (1 - sigma / sigma_schedule[0])
             # else:
@@ -340,7 +340,8 @@ def run_sample_step(
             if guessed_mask.any():
                 # v_hat = (x_L_mean - x_t) / (0 - sigma)
                 # 这里的 x_L_mean 已经是按组对应的了
-                v_guess = (x_L_mean[guessed_mask] - z[guessed_mask].to(torch.float32)) / (d_sigma if abs(d_sigma) > 1e-6 else 1e-6)
+                # v_guess = (x_L_mean[guessed_mask] - z[guessed_mask].to(torch.float32)) / (d_sigma if abs(d_sigma) > 1e-6 else 1e-6)
+                v_guess = v_mean[guess_mask]
                 
                 # 添加动量：将上一轮的速度以权重0.05加到当前guess的速度上， 在后半段，momenta_weight > 1, 则变成负向修正
                 v_guess_with_momentum = (1 - momentum_weight) * v_guess + momentum_weight * prev_velocities[guessed_mask]

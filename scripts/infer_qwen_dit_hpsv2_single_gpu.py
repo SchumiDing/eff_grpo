@@ -2,6 +2,9 @@
 # Copyright: DanceGRPO / user script — single-GPU Qwen-Image (diffusers) inference with
 # a DiT-only checkpoint folder, precomputed text embeddings, and HPSv2 evaluation.
 #
+# Denoising follows the official QwenImagePipeline (FlowMatchEulerDiscreteScheduler + transformer
+# forward + scheduler.step). This avoids FastVideo GRPO rollout (stochastic flux_step + scratch PNGs).
+#
 # Usage (from repo root, with your conda env that has diffusers + torch):
 #   export PYTHONPATH=/path/to/DanceGRPO
 #   python scripts/infer_qwen_dit_hpsv2_single_gpu.py \
@@ -17,10 +20,11 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import shutil
 import sys
-from dataclasses import dataclass
 from pathlib import Path
+
+import numpy as np
+import torch
 
 
 def _repo_root() -> Path:
@@ -35,7 +39,7 @@ def _ensure_paths() -> None:
 
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
-        description="Single-GPU Qwen-Image: load DiT checkpoint + RL embeddings, sample, HPSv2 score."
+        description="Single-GPU Qwen-Image: load DiT checkpoint + RL embeddings, official scheduler denoise, HPSv2."
     )
     p.add_argument(
         "--dit_checkpoint",
@@ -47,7 +51,7 @@ def _parse_args() -> argparse.Namespace:
         "--base_model",
         type=str,
         default=None,
-        help="Full Qwen-Image diffusers tree (VAE + scheduler metadata). Default: <repo>/data/qwenimage",
+        help="Full Qwen-Image diffusers tree (VAE + scheduler). Default: <repo>/data/qwenimage",
     )
     p.add_argument(
         "--embeddings_path",
@@ -60,12 +64,22 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--sampling_steps", type=int, default=20)
     p.add_argument("--height", type=int, default=720)
     p.add_argument("--width", type=int, default=720)
-    p.add_argument("--shift", type=float, default=3.0)
-    p.add_argument("--eta", type=float, default=0.3)
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--start_idx", type=int, default=0)
     p.add_argument("--end_idx", type=int, default=None, help="Exclusive global end index (default: all).")
     p.add_argument("--device", type=str, default="cuda:0")
+    p.add_argument(
+        "--max_sequence_length",
+        type=int,
+        default=1024,
+        help="Truncate prompt embeds (must match RL preprocessing; pipeline default caps at 1024).",
+    )
+    p.add_argument(
+        "--guidance_scale",
+        type=float,
+        default=None,
+        help="Only for guidance-distilled checkpoints (transformer.config.guidance_embeds). Else ignored.",
+    )
     p.add_argument(
         "--hps_version",
         type=str,
@@ -100,24 +114,10 @@ def _parse_args() -> argparse.Namespace:
     return p.parse_args()
 
 
-@dataclass
-class SampleArgs:
-    w: int
-    h: int
-    t: int
-    sampling_steps: int
-    shift: float
-    eta: float
-    init_same_noise: bool
-    use_hpsv2: bool
-    use_hpsv3: bool
-    use_pickscore: bool
-
-
 def _load_transformer(dit_checkpoint: str, attn: str):
     from diffusers.models.transformers.transformer_qwenimage import QwenImageTransformer2DModel
 
-    kwargs = {"torch_dtype": __import__("torch").bfloat16}
+    kwargs = {"torch_dtype": torch.bfloat16}
     if attn == "auto":
         try:
             return QwenImageTransformer2DModel.from_pretrained(
@@ -133,8 +133,6 @@ def _load_transformer(dit_checkpoint: str, attn: str):
 
 
 def _safe_torch_load(path: str):
-    import torch
-
     try:
         return torch.load(path, map_location="cpu", weights_only=True)
     except TypeError:
@@ -147,11 +145,9 @@ def _init_hps(
     hps_checkpoint: str | None,
     open_clip_checkpoint: str | None,
 ):
-    import torch
     from hpsv2.src.open_clip import create_model_and_transforms, get_tokenizer
     from hpsv2.utils import hps_version_map
 
-    # Local file (e.g. hps_ckpt/open_clip_pytorch_model.bin) avoids any pretrained tag download.
     oc = open_clip_checkpoint if (open_clip_checkpoint and os.path.isfile(open_clip_checkpoint)) else None
 
     model, _, preprocess_val = create_model_and_transforms(
@@ -186,6 +182,180 @@ def _init_hps(
     return model, preprocess_val, tokenizer
 
 
+def _pack_latents(latents, batch_size, num_channels_latents, height, width):
+    latents = latents.view(batch_size, num_channels_latents, height // 2, 2, width // 2, 2)
+    latents = latents.permute(0, 2, 4, 1, 3, 5)
+    latents = latents.reshape(batch_size, (height // 2) * (width // 2), num_channels_latents * 4)
+    return latents
+
+
+def _unpack_latents(latents, height, width, vae_scale_factor):
+    batch_size, num_patches, channels = latents.shape
+    height = 2 * (int(height) // (vae_scale_factor * 2))
+    width = 2 * (int(width) // (vae_scale_factor * 2))
+    latents = latents.view(batch_size, height // 2, width // 2, channels // 4, 2, 2)
+    latents = latents.permute(0, 3, 1, 4, 2, 5)
+    latents = latents.reshape(batch_size, channels // (2 * 2), 1, height, width)
+    return latents
+
+
+def _prepare_prompt_batch(
+    encoder_hidden_states: torch.Tensor,
+    prompt_attention_masks: torch.Tensor,
+    original_length: torch.Tensor,
+    max_sequence_length: int,
+) -> tuple[torch.Tensor, torch.Tensor, list[int]]:
+    """Slice to true length, pad batch, align with QwenImagePipeline.encode_prompt.
+
+    Some diffusers builds require explicit ``txt_seq_lens`` for RoPE (``pos_embed``); we always
+    return per-sample valid lengths from the mask (same convention as ``train_grpo_qwenimage``).
+    """
+    b = encoder_hidden_states.shape[0]
+    processed_e = []
+    processed_m = []
+    for idx in range(b):
+        actual_length = int(original_length[idx].item())
+        processed_e.append(encoder_hidden_states[idx : idx + 1, :actual_length, :])
+        processed_m.append(prompt_attention_masks[idx : idx + 1, :actual_length])
+    max_seq_len = max(x.shape[1] for x in processed_e)
+    padded_e = []
+    padded_m = []
+    for idx in range(b):
+        embed = processed_e[idx]
+        mask = processed_m[idx]
+        if embed.shape[1] < max_seq_len:
+            pad_len = max_seq_len - embed.shape[1]
+            embed = torch.nn.functional.pad(embed, (0, 0, 0, pad_len), "constant", 0)
+            mask = torch.nn.functional.pad(mask, (0, pad_len), "constant", 0)
+        padded_e.append(embed)
+        padded_m.append(mask)
+    pe = torch.cat(padded_e, dim=0)
+    pm = torch.cat(padded_m, dim=0)
+    pe = pe[:, :max_sequence_length]
+    pm = pm[:, :max_sequence_length].float()
+    txt_seq_lens = [int(pm[i].sum().item()) for i in range(b)]
+    pe = pe.to(dtype=torch.bfloat16)
+    return pe, pm, txt_seq_lens
+
+
+def _qwen_official_denoise(
+    *,
+    transformer,
+    scheduler,
+    vae,
+    image_processor,
+    vae_scale_factor: int,
+    prompt_embeds: torch.Tensor,
+    prompt_embeds_mask: torch.Tensor,
+    txt_seq_lens: list[int],
+    height: int,
+    width: int,
+    num_inference_steps: int,
+    device: str,
+    generator: torch.Generator | None,
+    guidance_scale: float | None,
+) -> list:
+    """Match diffusers QwenImagePipeline.__call__ denoising + VAE decode (batch)."""
+    from diffusers.pipelines.qwenimage.pipeline_qwenimage import calculate_shift, retrieve_timesteps
+    from diffusers.utils.torch_utils import randn_tensor
+
+    num_channels_latents = transformer.config.in_channels // 4
+    h_in = 2 * (int(height) // (vae_scale_factor * 2))
+    w_in = 2 * (int(width) // (vae_scale_factor * 2))
+    batch_size = prompt_embeds.shape[0]
+    shape = (batch_size, 1, num_channels_latents, h_in, w_in)
+    latents = randn_tensor(shape, generator=generator, device=device, dtype=prompt_embeds.dtype)
+    latents = _pack_latents(latents, batch_size, num_channels_latents, h_in, w_in)
+
+    triple = (1, height // vae_scale_factor // 2, width // vae_scale_factor // 2)
+    img_shapes = [[triple] for _ in range(batch_size)]
+
+    sigmas = np.linspace(1.0, 1 / num_inference_steps, num_inference_steps)
+    image_seq_len = latents.shape[1]
+    mu = calculate_shift(
+        image_seq_len,
+        scheduler.config.get("base_image_seq_len", 256),
+        scheduler.config.get("max_image_seq_len", 4096),
+        scheduler.config.get("base_shift", 0.5),
+        scheduler.config.get("max_shift", 1.15),
+    )
+    timesteps, num_inference_steps = retrieve_timesteps(
+        scheduler,
+        num_inference_steps,
+        device,
+        sigmas=sigmas,
+        mu=mu,
+    )
+
+    if getattr(transformer.config, "guidance_embeds", False):
+        if guidance_scale is None:
+            raise ValueError("This checkpoint expects --guidance_scale (guidance-distilled).")
+        g = torch.full([batch_size], guidance_scale, device=device, dtype=torch.float32)
+    else:
+        g = None
+
+    scheduler.set_begin_index(0)
+    with torch.no_grad():
+        for t in timesteps:
+            timestep = t.expand(latents.shape[0]).to(latents.dtype)
+            # Do not use transformer.cache_context() here: some diffusers/torch combos break
+            # ``with cache_context(...)`` (not a stdlib-compatible context manager).
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=device.startswith("cuda")):
+                noise_pred = transformer(
+                    hidden_states=latents,
+                    timestep=timestep / 1000,
+                    guidance=g,
+                    encoder_hidden_states_mask=prompt_embeds_mask,
+                    encoder_hidden_states=prompt_embeds,
+                    img_shapes=img_shapes,
+                    txt_seq_lens=txt_seq_lens,
+                    attention_kwargs=None,
+                    return_dict=False,
+                )[0]
+            latents_dtype = latents.dtype
+            latents = scheduler.step(noise_pred, t, latents, return_dict=False)[0]
+            if latents.dtype != latents_dtype:
+                latents = latents.to(latents_dtype)
+
+        latents = _unpack_latents(latents, height, width, vae_scale_factor)
+        latents = latents.to(vae.dtype)
+        latents_mean = (
+            torch.tensor(vae.config.latents_mean)
+            .view(1, vae.config.z_dim, 1, 1, 1)
+            .to(latents.device, latents.dtype)
+        )
+        latents_std = 1.0 / torch.tensor(vae.config.latents_std).view(1, vae.config.z_dim, 1, 1, 1).to(
+            latents.device, latents.dtype
+        )
+        latents = latents / latents_std + latents_mean
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=device.startswith("cuda")):
+            images = vae.decode(latents, return_dict=False)[0][:, :, 0]
+        decoded = image_processor.postprocess(images, output_type="pil")
+    return decoded
+
+
+def _hps_scores_batch(
+    reward_model,
+    preprocess_val,
+    tokenizer,
+    device: str,
+    pil_images: list,
+    captions: list[str],
+) -> torch.Tensor:
+    scores = []
+    with torch.no_grad():
+        for pil, cap in zip(pil_images, captions):
+            image = preprocess_val(pil).unsqueeze(0).to(device=device, non_blocking=True)
+            text = tokenizer([cap]).to(device=device, non_blocking=True)
+            with torch.amp.autocast("cuda"):
+                outputs = reward_model(image, text)
+                image_features, text_features = outputs["image_features"], outputs["text_features"]
+                logits_per_image = image_features @ text_features.T
+                hps_score = torch.diagonal(logits_per_image)
+            scores.append(hps_score.float())
+    return torch.cat(scores, dim=0)
+
+
 def main() -> None:
     args = _parse_args()
     _ensure_paths()
@@ -199,23 +369,15 @@ def main() -> None:
     out_dir = Path(os.path.abspath(os.path.expanduser(args.output_dir)))
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Single-process env (train_grpo_qwenimage expects RANK for filenames)
-    os.environ.setdefault("RANK", "0")
-    os.environ.setdefault("LOCAL_RANK", "0")
-    os.environ.setdefault("WORLD_SIZE", "1")
-    scratch = out_dir / "_rollout_scratch"
-    scratch.mkdir(exist_ok=True)
-    os.environ["DANCEGRPO_ROLLOUT_IMAGE_DIR"] = str(scratch)
-
-    import torch
-    from diffusers.models.autoencoders import AutoencoderKLQwenImage
-
     torch.manual_seed(args.seed)
 
-    # HPSv2 on path: repo sibling or pip install
     hps_root = os.environ.get("HPSV2_ROOT", str(_repo_root().parent / "HPSv2"))
     if os.path.isdir(hps_root) and hps_root not in sys.path:
         sys.path.insert(0, hps_root)
+
+    from diffusers.image_processor import VaeImageProcessor
+    from diffusers.models.autoencoders import AutoencoderKLQwenImage
+    from diffusers.schedulers import FlowMatchEulerDiscreteScheduler
 
     device = args.device
     if device.startswith("cuda") and not torch.cuda.is_available():
@@ -225,10 +387,11 @@ def main() -> None:
     transformer = _load_transformer(dit_ckpt, args.attn).to(device)
     transformer.eval()
 
-    print(f"Loading VAE from {base_model} (subfolder vae) ...")
-    vae = AutoencoderKLQwenImage.from_pretrained(base_model, subfolder="vae", torch_dtype=torch.bfloat16).to(
-        device
-    )
+    print(f"Loading VAE + scheduler from {base_model} ...")
+    vae = AutoencoderKLQwenImage.from_pretrained(base_model, subfolder="vae", torch_dtype=torch.bfloat16).to(device)
+    scheduler = FlowMatchEulerDiscreteScheduler.from_pretrained(base_model, subfolder="scheduler")
+    vae_sf = 2 ** len(vae.temperal_downsample) if getattr(vae, "temperal_downsample", None) is not None else 8
+    image_processor = VaeImageProcessor(vae_scale_factor=vae_sf * 2)
 
     reward_model = None
     preprocess_val = None
@@ -242,9 +405,6 @@ def main() -> None:
         reward_model, preprocess_val, tokenizer = _init_hps(
             device, args.hps_version, args.hps_checkpoint, oc_path
         )
-
-    from fastvideo.utils.rollout_image_dir import rollout_image_file
-    from fastvideo.train_grpo_qwenimage import sample_reference_model
 
     json_path = os.path.join(emb_root, "videos2caption.json")
     with open(json_path, "r", encoding="utf-8") as f:
@@ -260,19 +420,6 @@ def main() -> None:
 
     metrics_path = out_dir / "hps_metrics.jsonl"
     agg_scores: list[float] = []
-
-    mock = SampleArgs(
-        w=args.width,
-        h=args.height,
-        t=1,
-        sampling_steps=args.sampling_steps,
-        shift=args.shift,
-        eta=args.eta,
-        init_same_noise=False,
-        use_hpsv2=not args.no_hps,
-        use_hpsv3=False,
-        use_pickscore=False,
-    )
 
     bs = max(1, args.batch_size)
     global_offset = args.start_idx
@@ -295,34 +442,47 @@ def main() -> None:
         prompt_attention_masks = torch.stack(pm_list, dim=0).to(device)
         original_length = torch.tensor(orig_lens, device=device, dtype=torch.long)
 
-        # Clear scratch PNGs from previous batch
-        for p in scratch.glob("qwenimage_*.png"):
-            p.unlink(missing_ok=True)
-
-        rewards, _, _, _, _ = sample_reference_model(
-            mock,
-            device,
-            transformer,
-            vae,
+        pe, pm, txt_seq_lens = _prepare_prompt_batch(
             prompt_embeds,
             prompt_attention_masks,
             original_length,
-            reward_model,
-            tokenizer,
-            caps,
-            preprocess_val,
+            args.max_sequence_length,
         )
-        rewards_cpu = rewards.detach().float().cpu()
+
+        gen_device = device if device.startswith("cuda") else "cpu"
+        gen = torch.Generator(device=gen_device).manual_seed(int(args.seed + global_offset + start))
+
+        vae.enable_tiling()
+        pil_images = _qwen_official_denoise(
+            transformer=transformer,
+            scheduler=scheduler,
+            vae=vae,
+            image_processor=image_processor,
+            vae_scale_factor=vae_sf,
+            prompt_embeds=pe,
+            prompt_embeds_mask=pm,
+            txt_seq_lens=txt_seq_lens,
+            height=args.height,
+            width=args.width,
+            num_inference_steps=args.sampling_steps,
+            device=device,
+            generator=gen,
+            guidance_scale=args.guidance_scale,
+        )
+
+        if not args.no_hps:
+            rewards_cpu = _hps_scores_batch(
+                reward_model, preprocess_val, tokenizer, device, pil_images, caps
+            ).cpu()
+        else:
+            rewards_cpu = None
 
         for j, item in enumerate(batch):
             gi = global_offset + start + j
-            src = rollout_image_file(f"qwenimage_0_{j}.png")
             dst = out_dir / f"{gi:05d}.png"
-            if not os.path.isfile(src):
-                raise FileNotFoundError(f"Expected rollout image missing: {src}")
-            shutil.move(src, dst)
-            score = float(rewards_cpu[j].item()) if not args.no_hps else float("nan")
-            if not args.no_hps:
+            pil_images[j].save(dst)
+            score = float(rewards_cpu[j].item()) if rewards_cpu is not None else float("nan")
+            if rewards_cpu is not None:
                 agg_scores.append(score)
             rec = {
                 "index": gi,
@@ -343,8 +503,6 @@ def main() -> None:
         print(f"Mean HPSv2 ({args.hps_version}): {mean_hps:.4f} over {len(agg_scores)} images.")
     else:
         print("Done (HPS skipped).")
-
-    shutil.rmtree(scratch, ignore_errors=True)
 
 
 if __name__ == "__main__":

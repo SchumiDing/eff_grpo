@@ -191,7 +191,7 @@ def main() -> None:
     parser.add_argument(
         "root_path",
         nargs="?",
-        default="/mnt/shared-storage-user/mineru4s/dingruiyi/DanceGRPO/data/outputs/grpo_standard",
+        default="/mnt/shared-storage-user/mineru4s/dingruiyi/DanceGRPO/data/outputs/grpo_eff_auto_mta_2",
         type=str,
         help="Directory containing logging.jsonl; figures are written here",
     )
