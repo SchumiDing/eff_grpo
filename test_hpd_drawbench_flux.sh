@@ -5,10 +5,10 @@ export LD_LIBRARY_PATH=/mnt/shared-storage-user/mineru4s/dingruiyi/share/cuda-12
 export RANK=0
 export WORLD_SIZE=4
 export CUDA_VISIBLE_DEVICES=0,1,2,3
-torchrun --nproc_per_node=4 fastvideo/test_qwen_rollout_comparison.py \
-    --model_path data/qwenimage \
-    --embeddings_path data/qwenimage/rl_embeddings_drawbench\
-    --batch_size 10 \
+torchrun --nproc_per_node=4 fastvideo/test_flux_rollout_comparison.py \
+    --model_path data/flux \
+    --embeddings_path data/flux/rl_embeddings_drawbench\
+    --batch_size 4 \
     --num_generations 12 \
     --num_guess 4 \
-    --rollout_image_dir data/outputs/rollout_scratch_drawbench \
+    --rollout_image_dir data/outputs/rollout_scratch_drawbench_flux \

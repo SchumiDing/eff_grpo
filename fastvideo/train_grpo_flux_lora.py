@@ -113,6 +113,46 @@ def assert_eq(x, y, msg=None):
     assert x == y, f"{msg or 'Assertion failed'}: {x} != {y}"
 
 
+def prepare_flux_txt_ids(text_ids: torch.Tensor, encoder_hidden_states: torch.Tensor) -> torch.Tensor:
+    """FluxTransformer2DModel expects txt_ids (text_seq_len, 3), same as diffusers (no batch dim).
+
+    Diffusers uses zeros(seq, 3) for all prompts. Cached files from a buggy preprocess may be (3,) per sample
+    (one row indexed from the real (seq, 3) table), stacking to (batch, 3) — recover with zeros like the pipeline.
+    """
+    seq = encoder_hidden_states.shape[1]
+    batch = encoder_hidden_states.shape[0]
+    device = encoder_hidden_states.device
+    dtype = encoder_hidden_states.dtype
+
+    def zeros_table():
+        return torch.zeros(seq, 3, device=device, dtype=dtype)
+
+    if text_ids.ndim == 3:
+        b, l, c = text_ids.shape
+        if c != 3:
+            raise ValueError(f"text_ids last dim must be 3; got {tuple(text_ids.shape)}")
+        if l == seq:
+            return text_ids[0].to(device=device, dtype=dtype)
+        return zeros_table()
+
+    if text_ids.ndim == 2 and text_ids.shape[-1] == 3:
+        n = text_ids.shape[0]
+        if n == seq:
+            return text_ids.to(device=device, dtype=dtype)
+        if n == batch:
+            return zeros_table()
+        raise ValueError(
+            f"text_ids rows {n} is neither seq_len {seq} nor batch {batch}; got {tuple(text_ids.shape)}"
+        )
+
+    if text_ids.ndim == 1 and text_ids.numel() == 3:
+        return zeros_table()
+
+    raise ValueError(
+        f"Unusable text_ids shape {tuple(text_ids.shape)} for encoder seq_len={seq}, batch={batch}"
+    )
+
+
 def prepare_latent_image_ids(batch_size, height, width, device, dtype):
     latent_image_ids = torch.zeros(height, width, 3)
     latent_image_ids[..., 1] = latent_image_ids[..., 1] + torch.arange(height)[:, None]
@@ -179,7 +219,7 @@ def run_sample_step(
                         device=z.device,
                         dtype=torch.bfloat16
                     ),
-                    txt_ids=text_ids.repeat(encoder_hidden_states.shape[1],1), # B, L
+                    txt_ids=prepare_flux_txt_ids(text_ids, encoder_hidden_states),
                     pooled_projections=pooled_prompt_embeds,
                     img_ids=image_ids,
                     joint_attention_kwargs=None,
@@ -220,7 +260,7 @@ def grpo_one_step(
                 device=latents.device,
                 dtype=torch.bfloat16
             ),
-            txt_ids=text_ids.repeat(encoder_hidden_states.shape[1],1), # B, L
+            txt_ids=prepare_flux_txt_ids(text_ids, encoder_hidden_states),
             pooled_projections=pooled_prompt_embeds,
             img_ids=image_ids.squeeze(0),
             joint_attention_kwargs=None,

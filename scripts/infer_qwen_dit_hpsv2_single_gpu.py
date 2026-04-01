@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
-# Copyright: DanceGRPO / user script — single-GPU Qwen-Image (diffusers) inference with
-# a DiT-only checkpoint folder, precomputed text embeddings, and HPSv2 evaluation.
+# Copyright: DanceGRPO / user script — Qwen-Image (diffusers) inference with a DiT-only checkpoint
+# folder, precomputed text embeddings, and optional HPSv2 evaluation.
 #
 # Denoising follows the official QwenImagePipeline (FlowMatchEulerDiscreteScheduler + transformer
 # forward + scheduler.step). This avoids FastVideo GRPO rollout (stochastic flux_step + scratch PNGs).
 #
-# Usage (from repo root, with your conda env that has diffusers + torch):
+# Single GPU (from repo root):
 #   export PYTHONPATH=/path/to/DanceGRPO
 #   python scripts/infer_qwen_dit_hpsv2_single_gpu.py \
 #     --dit_checkpoint data/outputs/grpo_eff_auto_mta/checkpoint-26-0 \
 #     --base_model data/qwenimage \
 #     --embeddings_path data/qwenimage/rl_embeddings_drawbench \
 #     --output_dir outputs/drawbench_ckpt26_eval
+#
+# Four GPUs + FSDP (DiT sharded; VAE decode / IO on rank 0 only; VAE tiling off):
+#   torchrun --standalone --nproc_per_node=4 scripts/infer_qwen_dit_hpsv2_single_gpu.py \
+#     --dit_checkpoint ... --base_model ... --embeddings_path ... --output_dir ...
 #
 # Optional: add HPSv2 to PYTHONPATH or `pip install -e /path/to/HPSv2`.
 
@@ -25,10 +29,24 @@ from pathlib import Path
 
 import numpy as np
 import torch
+import torch.distributed as dist
 
 
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
+
+
+def _setup_distributed() -> tuple[int, int, int]:
+    """Returns (rank, world_size, local_rank). world_size==1 means no distributed run."""
+    ws = int(os.environ.get("WORLD_SIZE", "1"))
+    if ws <= 1:
+        return 0, 1, 0
+    if not dist.is_initialized():
+        dist.init_process_group(backend="nccl")
+    local_rank = int(os.environ["LOCAL_RANK"])
+    rank = int(os.environ["RANK"])
+    torch.cuda.set_device(local_rank)
+    return rank, ws, local_rank
 
 
 def _ensure_paths() -> None:
@@ -39,7 +57,8 @@ def _ensure_paths() -> None:
 
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
-        description="Single-GPU Qwen-Image: load DiT checkpoint + RL embeddings, official scheduler denoise, HPSv2."
+        description="Qwen-Image: DiT checkpoint + RL embeddings, official scheduler denoise, optional HPSv2; "
+        "multi-GPU via torchrun + FSDP on DiT."
     )
     p.add_argument(
         "--dit_checkpoint",
@@ -67,7 +86,19 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--start_idx", type=int, default=0)
     p.add_argument("--end_idx", type=int, default=None, help="Exclusive global end index (default: all).")
-    p.add_argument("--device", type=str, default="cuda:0")
+    p.add_argument(
+        "--device",
+        type=str,
+        default="cuda:0",
+        help="Single-GPU only. Under torchrun, each rank uses cuda:LOCAL_RANK (this flag is ignored).",
+    )
+    p.add_argument(
+        "--fsdp_sharding_strategy",
+        type=str,
+        default="FULL_SHARD",
+        choices=("FULL_SHARD", "SHARD_GRAD_OP", "NO_SHARD"),
+        help="FSDP sharding for DiT when WORLD_SIZE>1 (torchrun).",
+    )
     p.add_argument(
         "--max_sequence_length",
         type=int,
@@ -254,7 +285,10 @@ def _qwen_official_denoise(
     device: str,
     generator: torch.Generator | None,
     guidance_scale: float | None,
-) -> list:
+    rank: int = 0,
+    decode_rank: int = 0,
+    noise_seed: int | None = None,
+) -> list | None:
     """Match diffusers QwenImagePipeline.__call__ denoising + VAE decode (batch)."""
     from diffusers.pipelines.qwenimage.pipeline_qwenimage import calculate_shift, retrieve_timesteps
     from diffusers.utils.torch_utils import randn_tensor
@@ -264,7 +298,12 @@ def _qwen_official_denoise(
     w_in = 2 * (int(width) // (vae_scale_factor * 2))
     batch_size = prompt_embeds.shape[0]
     shape = (batch_size, 1, num_channels_latents, h_in, w_in)
-    latents = randn_tensor(shape, generator=generator, device=device, dtype=prompt_embeds.dtype)
+    if noise_seed is not None:
+        gen_cpu = torch.Generator(device="cpu").manual_seed(int(noise_seed))
+        latents = randn_tensor(shape, generator=gen_cpu, device="cpu", dtype=prompt_embeds.dtype)
+        latents = latents.to(device)
+    else:
+        latents = randn_tensor(shape, generator=generator, device=device, dtype=prompt_embeds.dtype)
     latents = _pack_latents(latents, batch_size, num_channels_latents, h_in, w_in)
 
     triple = (1, height // vae_scale_factor // 2, width // vae_scale_factor // 2)
@@ -317,6 +356,10 @@ def _qwen_official_denoise(
             if latents.dtype != latents_dtype:
                 latents = latents.to(latents_dtype)
 
+        if rank != decode_rank:
+            return None
+
+        assert vae is not None and image_processor is not None
         latents = _unpack_latents(latents, height, width, vae_scale_factor)
         latents = latents.to(vae.dtype)
         latents_mean = (
@@ -367,7 +410,12 @@ def main() -> None:
     base_model = os.path.abspath(os.path.expanduser(args.base_model))
     emb_root = os.path.abspath(os.path.expanduser(args.embeddings_path))
     out_dir = Path(os.path.abspath(os.path.expanduser(args.output_dir)))
-    out_dir.mkdir(parents=True, exist_ok=True)
+    rank, world_size, local_rank = _setup_distributed()
+    is_main = rank == 0
+    if is_main:
+        out_dir.mkdir(parents=True, exist_ok=True)
+    if world_size > 1:
+        dist.barrier()
 
     torch.manual_seed(args.seed)
 
@@ -378,25 +426,53 @@ def main() -> None:
     from diffusers.image_processor import VaeImageProcessor
     from diffusers.models.autoencoders import AutoencoderKLQwenImage
     from diffusers.schedulers import FlowMatchEulerDiscreteScheduler
+    from fastvideo.utils.fsdp_util_qwenimage import FSDPConfig, fsdp_wrapper
 
-    device = args.device
+    if world_size > 1:
+        device = f"cuda:{local_rank}"
+    else:
+        device = args.device
     if device.startswith("cuda") and not torch.cuda.is_available():
         raise RuntimeError("CUDA requested but not available.")
 
-    print(f"Loading DiT from {dit_ckpt} ...")
+    if is_main:
+        print(f"Loading DiT from {dit_ckpt} ...")
     transformer = _load_transformer(dit_ckpt, args.attn).to(device)
     transformer.eval()
+    if world_size > 1:
+        fsdp_config = FSDPConfig(
+            sharding_strategy=args.fsdp_sharding_strategy,
+            backward_prefetch="BACKWARD_PRE",
+            cpu_offload=False,
+            mixed_precision_dtype=torch.bfloat16,
+            use_device_mesh=False,
+        )
+        if is_main:
+            print(f"Wrapping DiT with FSDP ({args.fsdp_sharding_strategy}, world_size={world_size}) ...")
+        transformer = fsdp_wrapper(transformer, fsdp_config)
 
-    print(f"Loading VAE + scheduler from {base_model} ...")
-    vae = AutoencoderKLQwenImage.from_pretrained(base_model, subfolder="vae", torch_dtype=torch.bfloat16).to(device)
+    vae = None
+    image_processor = None
+    vae_sf = 8
+    if is_main:
+        print(f"Loading VAE + scheduler from {base_model} ...")
+        vae = AutoencoderKLQwenImage.from_pretrained(
+            base_model, subfolder="vae", torch_dtype=torch.bfloat16
+        ).to(device)
+        if hasattr(vae, "disable_tiling"):
+            vae.disable_tiling()
+        vae_sf = 2 ** len(vae.temperal_downsample) if getattr(vae, "temperal_downsample", None) is not None else 8
+        image_processor = VaeImageProcessor(vae_scale_factor=vae_sf * 2)
     scheduler = FlowMatchEulerDiscreteScheduler.from_pretrained(base_model, subfolder="scheduler")
-    vae_sf = 2 ** len(vae.temperal_downsample) if getattr(vae, "temperal_downsample", None) is not None else 8
-    image_processor = VaeImageProcessor(vae_scale_factor=vae_sf * 2)
+    if world_size > 1:
+        vae_sf_buf = torch.tensor([vae_sf], device=device, dtype=torch.long)
+        dist.broadcast(vae_sf_buf, src=0)
+        vae_sf = int(vae_sf_buf.item())
 
     reward_model = None
     preprocess_val = None
     tokenizer = None
-    if not args.no_hps:
+    if is_main and not args.no_hps:
         print("Loading HPSv2 ...")
         oc_path = args.hps_open_clip
         if oc_path is None:
@@ -413,7 +489,8 @@ def main() -> None:
     end = args.end_idx if args.end_idx is not None else len(data_anno)
     data_anno = data_anno[args.start_idx : end]
     n = len(data_anno)
-    print(f"Prompts in this run: {n} (indices {args.start_idx}..{end - 1})")
+    if is_main:
+        print(f"Prompts in this run: {n} (indices {args.start_idx}..{end - 1})")
 
     prompt_embed_dir = os.path.join(emb_root, "prompt_embed")
     mask_dir = os.path.join(emb_root, "prompt_attention_mask")
@@ -451,8 +528,8 @@ def main() -> None:
 
         gen_device = device if device.startswith("cuda") else "cpu"
         gen = torch.Generator(device=gen_device).manual_seed(int(args.seed + global_offset + start))
+        noise_seed = int(args.seed + global_offset + start) if world_size > 1 else None
 
-        vae.enable_tiling()
         pil_images = _qwen_official_denoise(
             transformer=transformer,
             scheduler=scheduler,
@@ -468,41 +545,51 @@ def main() -> None:
             device=device,
             generator=gen,
             guidance_scale=args.guidance_scale,
+            rank=rank,
+            decode_rank=0,
+            noise_seed=noise_seed,
         )
 
-        if not args.no_hps:
-            rewards_cpu = _hps_scores_batch(
-                reward_model, preprocess_val, tokenizer, device, pil_images, caps
-            ).cpu()
-        else:
-            rewards_cpu = None
+        if is_main and pil_images is not None:
+            if not args.no_hps:
+                rewards_cpu = _hps_scores_batch(
+                    reward_model, preprocess_val, tokenizer, device, pil_images, caps
+                ).cpu()
+            else:
+                rewards_cpu = None
 
-        for j, item in enumerate(batch):
-            gi = global_offset + start + j
-            dst = out_dir / f"{gi:05d}.png"
-            pil_images[j].save(dst)
-            score = float(rewards_cpu[j].item()) if rewards_cpu is not None else float("nan")
-            if rewards_cpu is not None:
-                agg_scores.append(score)
-            rec = {
-                "index": gi,
-                "image": str(dst),
-                "caption": item["caption"],
-                "hps": score,
-            }
-            with open(metrics_path, "a", encoding="utf-8") as mf:
-                mf.write(json.dumps(rec, ensure_ascii=False) + "\n")
+            for j, item in enumerate(batch):
+                gi = global_offset + start + j
+                dst = out_dir / f"{gi:05d}.png"
+                pil_images[j].save(dst)
+                score = float(rewards_cpu[j].item()) if rewards_cpu is not None else float("nan")
+                if rewards_cpu is not None:
+                    agg_scores.append(score)
+                rec = {
+                    "index": gi,
+                    "image": str(dst),
+                    "caption": item["caption"],
+                    "hps": score,
+                }
+                with open(metrics_path, "a", encoding="utf-8") as mf:
+                    mf.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
-        print(f"Batch {start // bs + 1}/{(n + bs - 1) // bs} done (saved {len(batch)} images).")
+            print(f"Batch {start // bs + 1}/{(n + bs - 1) // bs} done (saved {len(batch)} images).")
 
-    if agg_scores:
+        if world_size > 1:
+            dist.barrier()
+
+    if is_main and agg_scores:
         mean_hps = sum(agg_scores) / len(agg_scores)
         summary = {"num_images": len(agg_scores), "mean_hps": mean_hps}
         with open(out_dir / "summary.json", "w", encoding="utf-8") as f:
             json.dump(summary, f, indent=2)
         print(f"Mean HPSv2 ({args.hps_version}): {mean_hps:.4f} over {len(agg_scores)} images.")
-    else:
+    elif is_main:
         print("Done (HPS skipped).")
+
+    if world_size > 1 and dist.is_initialized():
+        dist.destroy_process_group()
 
 
 if __name__ == "__main__":

@@ -115,7 +115,8 @@ def main(args):
                         # save latent
                         torch.save(prompt_embeds[idx], prompt_embed_path)
                         torch.save(pooled_prompt_embeds[idx], pooled_prompt_embeds_path)
-                        torch.save(text_ids[idx], text_ids_path)    
+                        # text_ids from encode_prompt is (seq_len, 3), shared across batch — do not index by idx
+                        torch.save(text_ids, text_ids_path)    
                         item = {}
                         item["prompt_embed_path"] = video_name + ".pt"
                         item["text_ids"] = video_name + ".pt"

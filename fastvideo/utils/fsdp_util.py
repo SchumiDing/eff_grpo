@@ -94,6 +94,15 @@ def get_dit_fsdp_kwargs(
         auto_wrap_policy = None
     elif sharding_strategy == "hybrid_zero2":
         sharding_strategy = ShardingStrategy._HYBRID_SHARD_ZERO2
+    elif isinstance(sharding_strategy, str):
+        try:
+            sharding_strategy = ShardingStrategy[sharding_strategy]
+        except KeyError as e:
+            raise ValueError(
+                f"Unknown FSDP sharding_strategy {sharding_strategy!r}. "
+                f"Use full, hybrid_full, none, hybrid_zero2, or a ShardingStrategy name "
+                f"({', '.join(ShardingStrategy.__members__.keys())})."
+            ) from e
 
     device_id = torch.cuda.current_device()
     cpu_offload = (torch.distributed.fsdp.CPUOffload(

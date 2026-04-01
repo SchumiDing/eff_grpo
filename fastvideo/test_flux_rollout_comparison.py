@@ -1,15 +1,6 @@
 """
-对比测试脚本: 同时运行多种 rollout 方法并对比结果
-1. 原始方法: 不使用guess,每步都完整推理 (baseline)
-2. 平均方向方法: 使用平均方向计算guess
-3. 噪声方法: 直接添加随机噪声guess
-4. 动量方法: 使用平均方向+动量计算guess
-5. 直接复用方法: 直接复用上一轮速度
-6. 自适应动量方法: 随时间步自适应调整动量权重
-7. MTA D2: 二阶轨迹预测 + 动态动量 + 防过冲加速度耦合 (train_grpo_qwenimage_eff_mta_d2)
-8. MTA Alpha: 一阶 v_hat = alpha*v_prev + (1-alpha)*v_group，alpha 由速度一致性 (train_grpo_qwenimage_eff_mta_alpha)
-9. MTA AB2: 二阶外推 1.5*v_prev - 0.5*v_prevprev 再与 v_group 融合 (train_grpo_qwenimage_eff_mta_ab2)
-10. MTA VarGuess: 组内速度方差自适应 guess 数量，预测仍为 auto 动量 (train_grpo_qwenimage_eff_mta_varguess)
+Flux 对比测试: 与 test_qwen_rollout_comparison 相同的方法集合，使用 Flux DiT + T5/pooled 缓存嵌入。
+依赖 flux_rollout_sampling（由 Qwen 侧 train_grpo_qwenimage_* 的 guess 逻辑移植而来）。
 """
 
 import torch
@@ -25,24 +16,23 @@ import numpy as np
 import time
 import gc
 
-# 导入 FSDP 相关组件
-from fastvideo.utils.fsdp_util_qwenimage import fsdp_wrapper, FSDPConfig
 from fastvideo.utils.rollout_image_dir import rollout_image_file
 from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
-from torch.distributed.fsdp import StateDictType, FullStateDictConfig
 
-# 导入各 rollout 方法
-from train_grpo_qwenimage import sample_reference_model as sample_reference_model_original
-from train_grpo_qwenimage_eff import sample_reference_model as sample_reference_model_mean, sd3_time_shift
-from train_grpo_qwenimage_noise import sample_reference_model_noise
-from train_grpo_qwenimage_eff_mta import sample_reference_model as sample_reference_model_momentum
-from train_grpo_qwenimage_mta import sample_reference_model as sample_reference_model_reuse
-from train_grpo_qwenimage_eff_mta_auto import sample_reference_model as sample_reference_model_auto
-from train_grpo_qwenimage_eff_mta_d2 import sample_reference_model as sample_reference_model_d2
-from train_grpo_qwenimage_eff_mta_alpha import sample_reference_model as sample_reference_model_alpha
-from train_grpo_qwenimage_eff_mta_ab2 import sample_reference_model as sample_reference_model_ab2
-from train_grpo_qwenimage_eff_mta_varguess import sample_reference_model as sample_reference_model_varguess
-from train_grpo_qwenimage_eff_oneach import run_sample_step as run_sample_step_oneach, flux_step, unpack_latents, pack_latents
+from train_grpo_qwenimage_eff import sd3_time_shift
+from flux_rollout_sampling import (
+    sample_reference_model_flux_plain,
+    sample_reference_model_flux_mean,
+    sample_reference_model_flux_noise,
+    sample_reference_model_flux_momentum,
+    sample_reference_model_flux_reuse,
+    sample_reference_model_flux_auto,
+    sample_reference_model_flux_d2,
+    sample_reference_model_flux_alpha,
+    sample_reference_model_flux_ab2,
+    sample_reference_model_flux_varguess,
+)
+from fastvideo.utils.fsdp_util import get_dit_fsdp_kwargs
 
 def set_seed(seed):
     """设置所有随机种子以确保可复现性"""
@@ -56,8 +46,13 @@ def set_seed(seed):
 
 def test_comparison():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_path", type=str, default="data/qwenimage", help="Path to qwenimage weights")
-    parser.add_argument("--embeddings_path", type=str, default="data/qwenimage/rl_embeddings_anime", help="Path to rl embeddings")
+    parser.add_argument("--model_path", type=str, default="data/flux", help="Path to Flux diffusers checkpoint (transformer/ + vae/)")
+    parser.add_argument(
+        "--embeddings_path",
+        type=str,
+        default="data/flux/rl_embeddings",
+        help="Dir with videos2caption.json, prompt_embed/, pooled_prompt_embeds/, text_ids/",
+    )
     parser.add_argument("--num_generations", type=int, default=12, help="Number of samples per prompt")
     parser.add_argument(
         "--num_guess",
@@ -95,8 +90,13 @@ def test_comparison():
     parser.add_argument("--end_idx", type=int, default=None, help="End index of embeddings to load (None means all)")
     parser.add_argument("--batch_size", type=int, default=10, help="Number of prompts per batch")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
-    parser.add_argument("--methods", type=str, nargs='+', default=["original", "original_14", "reuse", "auto", "d2", "alpha", "ab2", "varguess"], 
-                        help="Methods to run: original, original_14, mean_direction, noise, momentum, reuse, auto, d2, alpha, ab2, varguess, oneach_14")
+    parser.add_argument(
+        "--methods",
+        type=str,
+        nargs="+",
+        default=["original", "original_14", "reuse", "auto", "d2", "alpha", "ab2", "varguess"],
+        help="Methods: original, original_14, mean_direction, noise, momentum, reuse, auto, d2, alpha, ab2, varguess",
+    )
     parser.add_argument("--fsdp_sharding_strategy", type=str, default="SHARD_GRAD_OP", help="FSDP sharding strategy")
     args = parser.parse_args()
 
@@ -127,13 +127,24 @@ def test_comparison():
     if rank == 0:
         print(f"Rollout image scratch dir (DANCEGRPO_ROLLOUT_IMAGE_DIR): {os.environ.get('DANCEGRPO_ROLLOUT_IMAGE_DIR', './images')}")
 
+    if args.output_path == "./test_results_comparison":
+        args.output_path = f"./test_results_comparison_{args.embeddings_path.split('/')[-1]}_flux"
     os.makedirs(args.output_path, exist_ok=True)
     
-    if args.output_path == "./test_results_comparison":
-        args.output_path = f"./test_results_comparison_{args.embeddings_path.split('/')[-1]}"
-    
     # 检查哪些方法已经生成过，跳过已有的方法
-    available_methods = ["original", "original_14", "mean_direction", "noise", "momentum", "reuse", "auto", "d2", "alpha", "ab2", "varguess", "oneach_14"]
+    available_methods = [
+        "original",
+        "original_14",
+        "mean_direction",
+        "noise",
+        "momentum",
+        "reuse",
+        "auto",
+        "d2",
+        "alpha",
+        "ab2",
+        "varguess",
+    ]
     methods_to_run = []
     for method in args.methods:
         if method not in available_methods:
@@ -160,30 +171,29 @@ def test_comparison():
 
     # 1. 加载组件
     print("Loading models...")
-    from diffusers.models.transformers.transformer_qwenimage import QwenImageTransformer2DModel
-    from diffusers.models.autoencoders import AutoencoderKLQwenImage
-    
-    transformer = QwenImageTransformer2DModel.from_pretrained(
-        args.model_path, 
-        subfolder="transformer", 
-        torch_dtype=torch.bfloat16,
-        attn_implementation="flash_attention_2"
-    )
+    from diffusers import FluxTransformer2DModel, AutoencoderKL
 
+    transformer = FluxTransformer2DModel.from_pretrained(
+        args.model_path,
+        subfolder="transformer",
+        torch_dtype=torch.bfloat16,
+    )
     if world_size > 1:
-        fsdp_config = FSDPConfig(
-            sharding_strategy=args.fsdp_sharding_strategy,
-            backward_prefetch="BACKWARD_PRE",
-            mixed_precision_dtype=torch.bfloat16
+        fsdp_kwargs, _no_split = get_dit_fsdp_kwargs(
+            transformer,
+            args.fsdp_sharding_strategy,
+            False,
+            False,
+            "fp32",
         )
-        transformer = fsdp_wrapper(transformer, fsdp_config)
+        transformer = FSDP(transformer, **fsdp_kwargs)
     else:
         transformer = transformer.to(device)
-        
-    vae = AutoencoderKLQwenImage.from_pretrained(
-        args.model_path, 
-        subfolder="vae", 
-        torch_dtype=torch.bfloat16
+
+    vae = AutoencoderKL.from_pretrained(
+        args.model_path,
+        subfolder="vae",
+        torch_dtype=torch.bfloat16,
     ).to(device)
     
     # 加载HPSv2 reward model
@@ -231,7 +241,8 @@ def test_comparison():
     print(f"Loading embeddings from {args.embeddings_path}...")
     json_path = os.path.join(args.embeddings_path, "videos2caption.json")
     prompt_embed_dir = os.path.join(args.embeddings_path, "prompt_embed")
-    prompt_attention_mask_dir = os.path.join(args.embeddings_path, "prompt_attention_mask")
+    pooled_prompt_embeds_dir = os.path.join(args.embeddings_path, "pooled_prompt_embeds")
+    text_ids_dir = os.path.join(args.embeddings_path, "text_ids")
     
     with open(json_path, "r") as f:
         data_anno = json.load(f)
@@ -246,33 +257,42 @@ def test_comparison():
     
     print(f"Rank {rank}/{world_size}: Processing {len(data_anno)} prompts (global index {args.start_idx + rank * per_rank} to {min(args.start_idx + (rank + 1) * per_rank, end_idx)-1})")
     
-    # 加载所有 embeddings
+    # 加载所有 embeddings（与 latent_flux_rl_datasets / preprocess_flux_embedding 一致）
     all_prompt_embeds = []
-    all_prompt_attention_masks = []
+    all_pooled_prompt_embeds = []
+    all_text_ids = []
     all_captions = []
-    all_original_lengths = []
     
     print("Loading embeddings...")
     for item in tqdm(data_anno, desc="Loading embeddings"):
-        prompt_embed = torch.load(
+        pe = torch.load(
             os.path.join(prompt_embed_dir, item["prompt_embed_path"]),
             map_location="cpu",
             weights_only=True,
         )
-        prompt_attention_mask = torch.load(
-            os.path.join(prompt_attention_mask_dir, item["prompt_attention_mask"]),
+        pooled = torch.load(
+            os.path.join(pooled_prompt_embeds_dir, item["pooled_prompt_embeds_path"]),
             map_location="cpu",
             weights_only=True,
         )
-        all_prompt_embeds.append(prompt_embed)
-        all_prompt_attention_masks.append(prompt_attention_mask)
-        all_captions.append(item['caption'])
-        all_original_lengths.append(item['original_length'])
+        tid_name = item.get("text_ids") or item.get("text_ids_path")
+        if tid_name is None:
+            raise KeyError("videos2caption item needs 'text_ids' or 'text_ids_path' for Flux")
+        tids = torch.load(
+            os.path.join(text_ids_dir, tid_name),
+            map_location="cpu",
+            weights_only=True,
+        )
+        all_prompt_embeds.append(pe)
+        all_pooled_prompt_embeds.append(pooled)
+        all_text_ids.append(tids)
+        all_captions.append(item["caption"])
     
     all_prompt_embeds = torch.stack(all_prompt_embeds, dim=0)
-    all_prompt_attention_masks = torch.stack(all_prompt_attention_masks, dim=0)
+    all_pooled_prompt_embeds = torch.stack(all_pooled_prompt_embeds, dim=0)
+    all_text_ids = torch.stack(all_text_ids, dim=0)
     
-    print(f"Loaded embeddings shape: {all_prompt_embeds.shape}")
+    print(f"Loaded prompt_embeds shape: {all_prompt_embeds.shape}")
     print(f"Total prompts: {len(all_captions)}")
     
     num_prompts = len(all_captions)
@@ -398,7 +418,7 @@ def test_comparison():
         for local_idx in range(n):
             prompt_idx = start_prompt_idx + local_idx // g
             gen_idx = local_idx % g
-            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}.png")
+            src = rollout_image_file(f"flux_{current_rank}_{local_idx}.png")
             prompt_dir = os.path.join(args.output_path, "original", f"prompt_{prompt_idx}")
             os.makedirs(prompt_dir, exist_ok=True)
             dst = os.path.join(prompt_dir, f"gen_{gen_idx}.png")
@@ -414,7 +434,7 @@ def test_comparison():
             prompt_idx = start_prompt_idx + local_idx // g
             gen_idx = local_idx % g
             guess_count = int(mock_flag_sums[local_idx])
-            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png")
+            src = rollout_image_file(f"flux_{current_rank}_{local_idx}_guess{guess_count}.png")
             prompt_dir = os.path.join(args.output_path, "mean_direction", f"prompt_{prompt_idx}")
             os.makedirs(prompt_dir, exist_ok=True)
             dst = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}.png")
@@ -430,7 +450,7 @@ def test_comparison():
             prompt_idx = start_prompt_idx + local_idx // g
             gen_idx = local_idx % g
             guess_count = int(mock_flag_sums[local_idx])
-            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_guess{guess_count}_noise.png")
+            src = rollout_image_file(f"flux_{current_rank}_{local_idx}_guess{guess_count}_noise.png")
             prompt_dir = os.path.join(args.output_path, "noise", f"prompt_{prompt_idx}")
             os.makedirs(prompt_dir, exist_ok=True)
             dst = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}.png")
@@ -446,7 +466,7 @@ def test_comparison():
             prompt_idx = start_prompt_idx + local_idx // g
             gen_idx = local_idx % g
             guess_count = int(mock_flag_sums[local_idx])
-            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png")
+            src = rollout_image_file(f"flux_{current_rank}_{local_idx}_guess{guess_count}.png")
             prompt_dir = os.path.join(args.output_path, "momentum", f"prompt_{prompt_idx}")
             os.makedirs(prompt_dir, exist_ok=True)
             dst = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}.png")
@@ -462,7 +482,7 @@ def test_comparison():
             prompt_idx = start_prompt_idx + local_idx // g
             gen_idx = local_idx % g
             guess_count = int(mock_flag_sums[local_idx])
-            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png")
+            src = rollout_image_file(f"flux_{current_rank}_{local_idx}_guess{guess_count}.png")
             prompt_dir = os.path.join(args.output_path, "reuse", f"prompt_{prompt_idx}")
             os.makedirs(prompt_dir, exist_ok=True)
             dst = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}.png")
@@ -478,7 +498,7 @@ def test_comparison():
             prompt_idx = start_prompt_idx + local_idx // g
             gen_idx = local_idx % g
             guess_count = int(mock_flag_sums[local_idx])
-            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png")
+            src = rollout_image_file(f"flux_{current_rank}_{local_idx}_guess{guess_count}.png")
             prompt_dir = os.path.join(args.output_path, "auto", f"prompt_{prompt_idx}")
             os.makedirs(prompt_dir, exist_ok=True)
             dst = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}.png")
@@ -494,7 +514,7 @@ def test_comparison():
             prompt_idx = start_prompt_idx + local_idx // g
             gen_idx = local_idx % g
             guess_count = int(mock_flag_sums[local_idx])
-            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png")
+            src = rollout_image_file(f"flux_{current_rank}_{local_idx}_guess{guess_count}.png")
             prompt_dir = os.path.join(args.output_path, "d2", f"prompt_{prompt_idx}")
             os.makedirs(prompt_dir, exist_ok=True)
             dst = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}.png")
@@ -510,7 +530,7 @@ def test_comparison():
             prompt_idx = start_prompt_idx + local_idx // g
             gen_idx = local_idx % g
             guess_count = int(mock_flag_sums[local_idx])
-            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png")
+            src = rollout_image_file(f"flux_{current_rank}_{local_idx}_guess{guess_count}.png")
             prompt_dir = os.path.join(args.output_path, "alpha", f"prompt_{prompt_idx}")
             os.makedirs(prompt_dir, exist_ok=True)
             dst = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}.png")
@@ -526,7 +546,7 @@ def test_comparison():
             prompt_idx = start_prompt_idx + local_idx // g
             gen_idx = local_idx % g
             guess_count = int(mock_flag_sums[local_idx])
-            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png")
+            src = rollout_image_file(f"flux_{current_rank}_{local_idx}_guess{guess_count}.png")
             prompt_dir = os.path.join(args.output_path, "ab2", f"prompt_{prompt_idx}")
             os.makedirs(prompt_dir, exist_ok=True)
             dst = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}.png")
@@ -542,7 +562,7 @@ def test_comparison():
             prompt_idx = start_prompt_idx + local_idx // g
             gen_idx = local_idx % g
             guess_count = int(mock_flag_sums[local_idx])
-            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png")
+            src = rollout_image_file(f"flux_{current_rank}_{local_idx}_guess{guess_count}.png")
             prompt_dir = os.path.join(args.output_path, "varguess", f"prompt_{prompt_idx}")
             os.makedirs(prompt_dir, exist_ok=True)
             dst = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}.png")
@@ -555,26 +575,13 @@ def test_comparison():
         for local_idx in range(n):
             prompt_idx = start_prompt_idx + local_idx // g
             gen_idx = local_idx % g
-            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}.png")
+            src = rollout_image_file(f"flux_{current_rank}_{local_idx}.png")
             prompt_dir = os.path.join(args.output_path, "original_14", f"prompt_{prompt_idx}")
             os.makedirs(prompt_dir, exist_ok=True)
             dst = os.path.join(prompt_dir, f"gen_{gen_idx}.png")
             if os.path.isfile(src):
                 shutil.move(src, dst)
 
-    def move_oneach_14_batch_to_output(start_prompt_idx: int, batch_num_prompts: int) -> None:
-        g = args.num_generations
-        n = batch_num_prompts * g
-        for local_idx in range(n):
-            prompt_idx = start_prompt_idx + local_idx // g
-            gen_idx = local_idx % g
-            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_oneach14.png")
-            prompt_dir = os.path.join(args.output_path, "oneach_14", f"prompt_{prompt_idx}")
-            os.makedirs(prompt_dir, exist_ok=True)
-            dst = os.path.join(prompt_dir, f"gen_{gen_idx}.png")
-            if os.path.isfile(src):
-                shutil.move(src, dst)
-    
     # 按batch处理所有prompts
     total_samples = num_prompts * args.num_generations
     print(f"\n{'='*80}")
@@ -595,7 +602,6 @@ def test_comparison():
         "alpha": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
         "ab2": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
         "varguess": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
-        "oneach_14": {"rewards": [], "latents": [], "log_probs": [], "txt_seq_lens": []},
     }
     
     # 计算batch数量
@@ -607,193 +613,18 @@ def test_comparison():
     
     for method in methods_to_run:
         method_name_map = {
-            "original": ("METHOD 1: Original (No Guess - Baseline)", sample_reference_model_original, move_original_batch_to_output, False, args.sampling_steps),
-            "original_14": ("METHOD 1.5: Original (14 Steps - Same Compute Baseline)", sample_reference_model_original, move_original_14_batch_to_output, False, eq_sampling_steps),
-            "mean_direction": ("METHOD 2: Mean Direction", sample_reference_model_mean, move_mean_batch_to_output, True, args.sampling_steps),
-            "noise": ("METHOD 3: Random Noise", sample_reference_model_noise, move_noise_batch_to_output, True, args.sampling_steps),
-            "momentum": ("METHOD 4: Momentum", sample_reference_model_momentum, move_momentum_batch_to_output, True, args.sampling_steps),
-            "reuse": ("METHOD 5: Reuse Velocity", sample_reference_model_reuse, move_reuse_batch_to_output, True, args.sampling_steps),
-            "auto": ("METHOD 6: Auto Momentum", sample_reference_model_auto, move_auto_batch_to_output, True, args.sampling_steps),
-            "d2": ("METHOD 7: MTA D2 (2nd-order + adaptive momentum)", sample_reference_model_d2, move_d2_batch_to_output, True, args.sampling_steps),
-            "alpha": ("METHOD 8: MTA Alpha (consistency-mixed v_prev + v_group)", sample_reference_model_alpha, move_alpha_batch_to_output, True, args.sampling_steps),
-            "ab2": ("METHOD 9: MTA AB2 (2nd-order extrapolation + v_group blend)", sample_reference_model_ab2, move_ab2_batch_to_output, True, args.sampling_steps),
-            "varguess": ("METHOD 10: MTA VarGuess (variance-adaptive num_guess + auto velocity)", sample_reference_model_varguess, move_varguess_batch_to_output, True, args.sampling_steps),
+            "original": ("METHOD 1: Original (No Guess - Baseline)", sample_reference_model_flux_plain, move_original_batch_to_output, False, args.sampling_steps),
+            "original_14": ("METHOD 1.5: Original (14 Steps - Same Compute Baseline)", sample_reference_model_flux_plain, move_original_14_batch_to_output, False, eq_sampling_steps),
+            "mean_direction": ("METHOD 2: Mean Direction", sample_reference_model_flux_mean, move_mean_batch_to_output, True, args.sampling_steps),
+            "noise": ("METHOD 3: Random Noise", sample_reference_model_flux_noise, move_noise_batch_to_output, True, args.sampling_steps),
+            "momentum": ("METHOD 4: Momentum", sample_reference_model_flux_momentum, move_momentum_batch_to_output, True, args.sampling_steps),
+            "reuse": ("METHOD 5: Reuse Velocity", sample_reference_model_flux_reuse, move_reuse_batch_to_output, True, args.sampling_steps),
+            "auto": ("METHOD 6: Auto Momentum", sample_reference_model_flux_auto, move_auto_batch_to_output, True, args.sampling_steps),
+            "d2": ("METHOD 7: MTA D2 (2nd-order + adaptive momentum)", sample_reference_model_flux_d2, move_d2_batch_to_output, True, args.sampling_steps),
+            "alpha": ("METHOD 8: MTA Alpha (consistency-mixed v_prev + v_group)", sample_reference_model_flux_alpha, move_alpha_batch_to_output, True, args.sampling_steps),
+            "ab2": ("METHOD 9: MTA AB2 (2nd-order extrapolation + v_group blend)", sample_reference_model_flux_ab2, move_ab2_batch_to_output, True, args.sampling_steps),
+            "varguess": ("METHOD 10: MTA VarGuess (variance-adaptive num_guess + auto velocity)", sample_reference_model_flux_varguess, move_varguess_batch_to_output, True, args.sampling_steps),
         }
-        
-        if method == "oneach_14":
-            # 特殊处理 oneach_14，因为它不使用 sample_reference_model 系列函数
-            if rank == 0:
-                print(f"\n{'='*80}")
-                print("METHOD 6.5: Oneach (14 Steps - Full Inference + Mean Correction)")
-                print(f"{'='*80}\n")
-            
-            for batch_idx in range(num_batches):
-                set_seed(42 + rank)
-                mock_args.sampling_steps = eq_sampling_steps
-                
-                start_local_idx = batch_idx * args.batch_size
-                end_local_idx = min((batch_idx + 1) * args.batch_size, len(data_anno))
-                batch_num_prompts = end_local_idx - start_local_idx
-                start_prompt_idx = args.start_idx + rank * per_rank + start_local_idx
-                
-                # 检查是否已生成
-                need_generate = False
-                for i in range(start_local_idx, end_local_idx):
-                    for gen_idx in range(args.num_generations):
-                        prompt_idx = start_prompt_idx + (i - start_local_idx)
-                        dst = os.path.join(args.output_path, "oneach_14", f"prompt_{prompt_idx}", f"gen_{gen_idx}.png")
-                        if not os.path.isfile(dst):
-                            need_generate = True
-                            break
-                    if need_generate: break
-                
-                if not need_generate:
-                    png_paths = _collect_batch_png_paths(
-                        "oneach_14", False, start_prompt_idx, start_local_idx, end_local_idx
-                    )
-                    if png_paths is not None and _all_judge_valid(png_paths):
-                        if rank == 0:
-                            print(
-                                f"[oneach_14] Batch {batch_idx + 1} images + judge cache found, reusing HPS scores..."
-                            )
-                        batch_rewards = _load_batch_rewards_from_judge(png_paths)
-                        results["oneach_14"]["rewards"].append(batch_rewards)
-                        results["oneach_14"]["log_probs"].append(
-                            torch.zeros(batch_num_prompts * args.num_generations, 1).cpu()
-                        )
-                        results["oneach_14"]["txt_seq_lens"].append(
-                            torch.zeros(batch_num_prompts * args.num_generations).cpu()
-                        )
-                        continue
-
-                    if rank == 0:
-                        print(
-                            f"[oneach_14] Batch {batch_idx + 1} images exist; recomputing HPS (missing or stale .judge.json)..."
-                        )
-
-                    batch_rewards_list = []
-                    png_paths_ordered = []
-                    for i in range(start_local_idx, end_local_idx):
-                        for gen_idx in range(args.num_generations):
-                            prompt_idx = start_prompt_idx + (i - start_local_idx)
-                            img_path = os.path.join(
-                                args.output_path, "oneach_14", f"prompt_{prompt_idx}", f"gen_{gen_idx}.png"
-                            )
-                            from PIL import Image
-
-                            img = Image.open(img_path).convert("RGB")
-                            image_input = preprocess_val(img).unsqueeze(0).to(device)
-                            text_input = tokenizer([all_captions[i]]).to(device)
-                            with torch.no_grad():
-                                with torch.amp.autocast("cuda"):
-                                    outputs = hpsv2_model(image_input, text_input)
-                                    hps_score = torch.diagonal(
-                                        outputs["image_features"] @ outputs["text_features"].T
-                                    )
-                                    batch_rewards_list.append(hps_score)
-                            png_paths_ordered.append(img_path)
-
-                    batch_rewards = torch.cat(batch_rewards_list)
-                    _save_batch_judge_sidecars(png_paths_ordered, batch_rewards)
-                    results["oneach_14"]["rewards"].append(batch_rewards.cpu())
-                    results["oneach_14"]["log_probs"].append(
-                        torch.zeros(batch_num_prompts * args.num_generations, 1).cpu()
-                    )
-                    results["oneach_14"]["txt_seq_lens"].append(
-                        torch.zeros(batch_num_prompts * args.num_generations).cpu()
-                    )
-                    continue
-
-                if rank == 0:
-                    print(f"[oneach_14] Processing batch {batch_idx + 1}/{num_batches} (prompts {start_prompt_idx}-{start_prompt_idx + batch_num_prompts - 1})...")
-                
-                encoder_hidden_states_list = []
-                prompt_attention_masks_list = []
-                original_length_list = []
-                captions_expanded = []
-                
-                for i in range(start_local_idx, end_local_idx):
-                    for _ in range(args.num_generations):
-                        encoder_hidden_states_list.append(all_prompt_embeds[i:i+1])
-                        prompt_attention_masks_list.append(all_prompt_attention_masks[i:i+1])
-                        original_length_list.append(all_original_lengths[i])
-                        captions_expanded.append(all_captions[i])
-                
-                encoder_hidden_states = torch.cat(encoder_hidden_states_list, dim=0).to(device)
-                prompt_attention_masks = torch.cat(prompt_attention_masks_list, dim=0).to(device)
-                original_length = torch.tensor(original_length_list).to(device)
-                B = encoder_hidden_states.shape[0]
-
-                if args.init_same_noise:
-                    input_latents = torch.randn((B//args.num_generations, 1, 16, args.height//8, args.width//8), device=device, dtype=torch.bfloat16).repeat_interleave(args.num_generations, dim=0)
-                else:
-                    input_latents = torch.randn((B, 1, 16, args.height//8, args.width//8), device=device, dtype=torch.bfloat16)
-                
-                input_latents_new = pack_latents(input_latents, B, 16, 2*(args.height//16), 2*(args.width//16))
-
-                sigma_schedule_14 = torch.linspace(1, 0, eq_sampling_steps + 1)
-                sigma_schedule_14 = sd3_time_shift(args.shift, sigma_schedule_14)
-                
-                img_shapes = [[(1, args.height // 8 // 2, args.width // 8 // 2)]]
-                txt_seq_lens = [encoder_hidden_states.shape[1]] * B
-
-                with torch.no_grad():
-                    z, latents, all_latents_tensor, all_log_probs_tensor, all_mock_flags_tensor = run_sample_step_oneach(
-                        mock_args,
-                        input_latents_new,
-                        tqdm(range(eq_sampling_steps), desc="Sampling", disable=(rank!=0)),
-                        sigma_schedule_14,
-                        transformer,
-                        encoder_hidden_states,
-                        prompt_attention_masks,
-                        img_shapes,
-                        txt_seq_lens,
-                        grpo_sample=True,
-                    )
-                
-                vae.enable_tiling()
-                image_processor = VaeImageProcessor(16)
-                with torch.inference_mode():
-                    with torch.autocast("cuda", dtype=torch.bfloat16):
-                        latents_unpacked = unpack_latents(latents, args.height, args.width, 8)
-                        latents_unpacked = latents_unpacked.to(vae.dtype)
-                        latents_mean = torch.tensor(vae.config.latents_mean).view(1, 16, 1, 1, 1).to(device, torch.bfloat16)
-                        latents_std = 1.0 / torch.tensor(vae.config.latents_std).view(1, 16, 1, 1, 1).to(device, torch.bfloat16)
-                        latents_unpacked = latents_unpacked / latents_std + latents_mean
-                        images = vae.decode(latents_unpacked, return_dict=False)[0][:, :, 0]
-                        decoded_images = image_processor.postprocess(images)
-                        for idx in range(B):
-                            decoded_images[idx].save(rollout_image_file(f"qwenimage_{current_rank}_{idx}_oneach14.png"))
-
-                all_rewards = []
-                with torch.no_grad():
-                    for idx in range(B):
-                        image = preprocess_val(decoded_images[idx]).unsqueeze(0).to(device)
-                        text = tokenizer([captions_expanded[idx]]).to(device)
-                        with torch.amp.autocast('cuda'):
-                            outputs = hpsv2_model(image, text)
-                            hps_score = torch.diagonal(outputs["image_features"] @ outputs["text_features"].T)
-                            all_rewards.append(hps_score)
-                batch_rewards = torch.cat(all_rewards)
-
-                move_oneach_14_batch_to_output(start_prompt_idx, batch_num_prompts)
-                exp_png = _expected_png_paths_for_batch(
-                    "oneach_14", False, start_prompt_idx, start_local_idx, end_local_idx, None
-                )
-                _save_batch_judge_sidecars(exp_png, batch_rewards)
-
-                results["oneach_14"]["rewards"].append(batch_rewards.cpu())
-                results["oneach_14"]["latents"].append(all_latents_tensor.cpu())
-                results["oneach_14"]["log_probs"].append(all_log_probs_tensor.cpu())
-                results["oneach_14"]["txt_seq_lens"].append(torch.tensor(txt_seq_lens))
-                
-                del encoder_hidden_states, prompt_attention_masks, original_length, input_latents, input_latents_new, latents, all_latents_tensor, all_log_probs_tensor, all_mock_flags_tensor, decoded_images, images, all_rewards, batch_rewards
-                torch.cuda.empty_cache()
-                gc.collect()
-
-                if rank == 0:
-                    print(f"Batch {batch_idx + 1}/{num_batches} completed!\n")
-            continue
 
         display_name, sample_fn, move_fn, has_mock_flags, current_sampling_steps = method_name_map[method]
         
@@ -817,22 +648,22 @@ def test_comparison():
             if rank == 0:
                 print(f"[{method}] Processing batch {batch_idx + 1}/{num_batches} (prompts {start_prompt_idx}-{start_prompt_idx + batch_num_prompts - 1})...")
             
-            # 准备当前batch的数据
+            # 准备当前 batch：Flux 使用 prompt_embed / pooled / text_ids（无 attention mask）
             encoder_hidden_states_list = []
-            prompt_attention_masks_list = []
-            original_length_list = []
+            pooled_list = []
+            text_ids_list = []
             captions_expanded = []
             
             for i in range(start_local_idx, end_local_idx):
                 for _ in range(args.num_generations):
-                    encoder_hidden_states_list.append(all_prompt_embeds[i:i+1])
-                    prompt_attention_masks_list.append(all_prompt_attention_masks[i:i+1])
-                    original_length_list.append(all_original_lengths[i])
+                    encoder_hidden_states_list.append(all_prompt_embeds[i : i + 1])
+                    pooled_list.append(all_pooled_prompt_embeds[i : i + 1])
+                    text_ids_list.append(all_text_ids[i : i + 1])
                     captions_expanded.append(all_captions[i])
             
             encoder_hidden_states = torch.cat(encoder_hidden_states_list, dim=0).to(device)
-            prompt_attention_masks = torch.cat(prompt_attention_masks_list, dim=0).to(device)
-            original_length = torch.tensor(original_length_list).to(device)
+            pooled_prompt_embeds = torch.cat(pooled_list, dim=0).to(device)
+            text_ids_batch = torch.cat(text_ids_list, dim=0).to(device)
             
             # 运行采样
             need_generate = False
@@ -841,11 +672,9 @@ def test_comparison():
                     prompt_idx = start_prompt_idx + (i - start_local_idx)
                     # 确定预期的文件名
                     if not has_mock_flags:
-                        if method == "oneach_14":
-                            dst = os.path.join(args.output_path, method, f"prompt_{prompt_idx}", f"gen_{gen_idx}.png")
-                        elif method == "original_14":
+                        if method == "original_14":
                             dst = os.path.join(args.output_path, "original_14", f"prompt_{prompt_idx}", f"gen_{gen_idx}.png")
-                        else: # original
+                        else:
                             dst = os.path.join(args.output_path, "original", f"prompt_{prompt_idx}", f"gen_{gen_idx}.png")
                     else:
                         # 对于带有 guess 的方法，由于不知道 guess 步数，我们检查目录是否存在且包含 png
@@ -958,8 +787,8 @@ def test_comparison():
                     transformer,
                     vae,
                     encoder_hidden_states,
-                    prompt_attention_masks,
-                    original_length,
+                    pooled_prompt_embeds,
+                    text_ids_batch,
                     reward_model=hpsv2_model,
                     tokenizer=tokenizer,
                     caption=captions_expanded,
@@ -987,8 +816,8 @@ def test_comparison():
                     transformer,
                     vae,
                     encoder_hidden_states,
-                    prompt_attention_masks,
-                    original_length,
+                    pooled_prompt_embeds,
+                    text_ids_batch,
                     reward_model=hpsv2_model,
                     tokenizer=tokenizer,
                     caption=captions_expanded,
@@ -1013,7 +842,7 @@ def test_comparison():
             results[method]["txt_seq_lens"].append(batch_txt_seq_lens.cpu() if torch.is_tensor(batch_txt_seq_lens) else batch_txt_seq_lens)
             
             # 彻底清理当前 batch 占用的显存
-            del encoder_hidden_states, prompt_attention_masks, original_length
+            del encoder_hidden_states, pooled_prompt_embeds, text_ids_batch
             del batch_rewards, batch_log_probs, batch_txt_seq_lens
             torch.cuda.empty_cache()
             gc.collect()
@@ -1130,7 +959,6 @@ def test_comparison():
             "alpha": "MTA Alpha (cosine alpha * v_prev + (1-alpha) * v_group)",
             "ab2": "MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group)",
             "varguess": "MTA VarGuess (adaptive guess count from group var; auto velocity)",
-            "oneach_14": "Oneach (14 steps - Full Inference + Mean Correction)"
         }
         
         # 计算 guess 统计 (从结果中提取)
@@ -1145,7 +973,7 @@ def test_comparison():
             print(f"Method {idx} ({method_names[method]}):")
             print(f"{'='*80}")
             
-            if method == "original" or method == "original_14" or method == "oneach_14":
+            if method == "original" or method == "original_14":
                 print(f"  - Guess steps: 0 (no guess)")
             elif method in num_guess_steps:
                 print(f"  - Average guess steps: {num_guess_steps[method].mean():.2f} ± {num_guess_steps[method].std():.2f}")

@@ -12,6 +12,7 @@
 import argparse
 import math
 import os
+import json
 from pathlib import Path
 from fastvideo.utils.parallel_states import (
     initialize_sequence_parallel_state,
@@ -228,37 +229,51 @@ def run_sample_step(
         cumulative_guess_count = torch.zeros(B, device=z.device, dtype=torch.long)
         # 存储上一轮每个rollout的速度（用于动量）
         prev_velocities = torch.zeros_like(z, dtype=torch.float32)
-        # 二阶预测：存储历史位置和时间步
-        z_history = []  # 存储历史位置 [z_t-2, z_t-1, ...]
-        sigma_history = []  # 存储历史sigma值
-        acceleration_weight_base = 0.05  # 加速度基准；实际权重按 momentum 防过冲缩放
+        # 上一步各 rollout 使用的速度场，用于组内方差 -> 本步 guess 数量
+        last_pred_v = torch.zeros_like(z, dtype=torch.float32)
         
         for i in progress_bar:  # Add progress bar
+            # # 前半段正向修正，后半段反向修正
             sigma = sigma_schedule[i]
-            # 自适应动量权重：早期步骤使用较小权重，后期使用较大权重（与 mta_auto 一致）
+            # ratio = (sigma / sigma_schedule[0])*2
+            # momentum_weight = 0.8 + 0.2*ratio
+            # 自适应动量权重：早期步骤使用较小权重，后期使用较大权重
             if i < len(progress_bar) * 0.5:
                 ratio = (sigma / sigma_schedule[0]) * 2
             else:
                 ratio = 1
-            momentum_weight = 0.6 + 0.4 * ratio
-            # 防过冲：momentum_weight 大时减弱加速度修正，避免与 v_guess + w*v2 叠加大
-            acceleration_weight = acceleration_weight_base / max(momentum_weight, 1.0)
-            # 前半程：v_guess + 二阶项与 prev 做凸组合引导；后半程：guess 仅复用 prev，避免后期差分/均值方向放大噪声
-            early_guess_phase = i < len(progress_bar) * 0.5
+            momentum_weight = 0.7 + 0.3*ratio
+            # if i > len(progress_bar) * 0.5:
+            #     ratio = (1 - sigma / sigma_schedule[0])
+            # else:
+            #     ratio = 0
+            # momentum_weight = (1 - 0.5*ratio)
             d_sigma = 0 - sigma # 到达终点 0 的距离
+            old_prev = prev_velocities.clone()
             timestep_value = int(sigma * 1000)
             timesteps = torch.full([B], timestep_value, device=z.device, dtype=torch.long)
             
-            # 按 prompt 分组：每组 num_generations 个 rollout；每组内独立选最多 num_guess 个去 mock
+            # 按 prompt 分组；每组 guess 数量随上一步组内速度方差调整（方差大则少 guess）
             can_guess_mask = ~last_step_guessed_mask
-            per_prompt_num_guess = 0 if i == len(progress_bar) - 1 else args.num_guess
+            cap_last = i == args.sampling_steps - 1
+            num_guess_max = args.num_guess
+            num_guess_min = getattr(args, "num_guess_min", 0)
+            var_tau = getattr(args, "var_guess_tau", 1e-4)
 
             guess_idx_chunks = []
             for p in range(num_prompts):
                 start_idx = p * num_generations
                 end_idx = (p + 1) * num_generations
                 local_can = torch.where(can_guess_mask[start_idx:end_idx])[0] + start_idx
-                ng = min(per_prompt_num_guess, int(local_can.numel()))
+                if cap_last or int(local_can.numel()) == 0:
+                    ng = 0
+                else:
+                    gstack = last_pred_v[start_idx:end_idx].reshape(num_generations, -1)
+                    var_g = gstack.var(dim=0, unbiased=False).mean()
+                    weight = (1.0 / (1.0 + var_g / var_tau)).item()
+                    ng = num_guess_min + (num_guess_max - num_guess_min) * weight
+                    ng = int(round(ng))
+                    ng = max(num_guess_min, min(ng, num_guess_max, int(local_can.numel())))
                 if ng > 0:
                     counts = cumulative_guess_count[local_can]
                     order = torch.argsort(counts)[:ng]
@@ -335,42 +350,24 @@ def run_sample_step(
             else:
                 x_L_mean = z.to(torch.float32).mean(dim=0, keepdim=True).expand(B, *z.shape[1:])
 
-            # 预测分支
+            # 预测分支：前半段用平均速度场 v_guess + 动量融合；后半段不再用组均值，直接复用本 rollout 上一速度
+            early_group_fusion = i < len(progress_bar) * 0.5
             if guessed_mask.any():
-                # v_hat = (x_L_mean - x_t) / (0 - sigma)
-                # 这里的 x_L_mean 已经是按组对应的了
-                v_guess = (x_L_mean[guessed_mask] - z[guessed_mask].to(torch.float32)) / (d_sigma if abs(d_sigma) > 1e-6 else 1e-6)
-
-                if not early_guess_phase:
-                    # 后半程：仅复用上一轮速度（与纯 reuse 思路一致），不再叠加 v_guess / 二阶差分
-                    v_reuse = prev_velocities[guessed_mask]
+                if early_group_fusion:
+                    v_guess = (x_L_mean[guessed_mask] - z[guessed_mask].to(torch.float32)) / (
+                        d_sigma if abs(d_sigma) > 1e-6 else 1e-6
+                    )
+                    v_guess_with_momentum = (1 - momentum_weight) * v_guess + momentum_weight * prev_velocities[
+                        guessed_mask
+                    ]
+                    pred[guessed_mask] = v_guess_with_momentum.to(pred.dtype)
+                    prev_velocities[guessed_mask] = v_guess_with_momentum
+                else:
+                    v_reuse = old_prev[guessed_mask]
                     pred[guessed_mask] = v_reuse.to(pred.dtype)
                     prev_velocities[guessed_mask] = v_reuse
-                else:
-                    # 前半程：v_guess + 二阶项先合成，再与 prev 做与 mta_auto 相同的凸组合，用 prev 约束发散
-                    if len(z_history) >= 2:
-                        prev_z_1 = z_history[-1]
-                        prev_z_2 = z_history[-2]
-                        sigma_1 = sigma_history[-1]
-                        sigma_2 = sigma_history[-2]
-                        dt_1 = sigma_2 - sigma_1
-                        dt_2 = sigma_1 - sigma
-                        velocity_1 = (prev_z_1 - prev_z_2) / (dt_1 if abs(dt_1) > 1e-6 else 1e-6)
-                        velocity_2 = (z.to(torch.float32) - prev_z_1) / (dt_2 if abs(dt_2) > 1e-6 else 1e-6)
-                        avg_dt = (abs(dt_1) + abs(dt_2)) / 2
-                        acceleration = (velocity_2 - velocity_1) / (avg_dt if avg_dt > 1e-6 else 1e-6)
-                        v_so = (
-                            v_guess
-                            + momentum_weight * velocity_2[guessed_mask]
-                            + 0.5 * acceleration_weight * acceleration[guessed_mask]
-                        )
-                        v_out = (1 - momentum_weight) * v_so + momentum_weight * prev_velocities[guessed_mask]
-                        pred[guessed_mask] = v_out.to(pred.dtype)
-                        prev_velocities[guessed_mask] = v_out
-                    else:
-                        v_guess_with_momentum = (1 - momentum_weight) * v_guess + momentum_weight * prev_velocities[guessed_mask]
-                        pred[guessed_mask] = v_guess_with_momentum.to(pred.dtype)
-                        prev_velocities[guessed_mask] = v_guess_with_momentum
+
+            last_pred_v.copy_(pred.to(torch.float32))
             
             # 演进
             z, pred_original, log_prob = flux_step(pred, z.to(torch.float32), args.eta, sigmas=sigma_schedule, index=i, prev_sample=None, grpo=True, sde_solver=True)
@@ -379,14 +376,6 @@ def run_sample_step(
             all_latents.append(z)
             all_log_probs.append(log_prob)
             all_mock_flags.append(mock_flag)
-            
-            # 更新历史记录（在演进之后）
-            z_history.append(z.clone().to(torch.float32))
-            sigma_history.append(sigma)
-            # 只保留最近3步的历史（用于二阶预测只需要2步）
-            if len(z_history) > 3:
-                z_history.pop(0)
-                sigma_history.pop(0)
             
             last_step_guessed_mask = guessed_mask
 
@@ -529,7 +518,13 @@ def sample_reference_model(
     img_shapes = [[(1, h // 8 // 2, w // 8// 2)]]
     
     grpo_sample = True
-    progress_bar = tqdm(range(0, sample_steps), desc="Sampling Progress")
+    _local_rank = int(os.environ.get("LOCAL_RANK", "0"))
+    progress_bar = tqdm(
+        range(0, sample_steps),
+        desc="Sampling Progress",
+        disable=_local_rank > 0,
+        leave=False,
+    )
     
     # 一次性推理所有rollout
     with torch.no_grad():
@@ -681,6 +676,7 @@ def train_one_step(
     ema_handler
 ):
     total_loss = 0.0
+    grad_norm = torch.tensor(0.0).to(device)
 
     #device = latents.device
     if args.use_group:
@@ -736,11 +732,7 @@ def train_one_step(
         "original_length": original_length,
     }
     gathered_reward = gather_tensor(samples["rewards"])
-    if dist.get_rank()==0:
-        print("gathered_reward", gathered_reward)
-        with open('./reward.txt', 'a') as f: 
-            f.write(f"{gathered_reward.mean().item()}\n")
-
+    avg_reward = gathered_reward.mean().item()
     #计算advantage
     if args.use_group:
         n = len(samples["rewards"]) // (args.num_generations)
@@ -835,7 +827,7 @@ def train_one_step(
             print("advantage", sample["advantages"].item())
             print("final loss", loss.item())
         dist.barrier()
-    return total_loss, grad_norm.item()
+    return total_loss, grad_norm.item(), avg_reward
 
 
 def main(args):
@@ -1039,9 +1031,11 @@ def main(args):
         assert NotImplementedError("resume_from_checkpoint is not supported now.")
         # TODO
 
+    train_bar_total = args.max_train_steps if args.max_train_steps is not None else 100000
     progress_bar = tqdm(
-        range(0, 100000),
-        initial=init_steps,
+        range(0, train_bar_total),
+        initial=min(init_steps, train_bar_total),
+        total=train_bar_total,
         desc="Steps",
         # Only show the progress bar once on each machine.
         disable=local_rank > 0,
@@ -1069,7 +1063,7 @@ def main(args):
                 dist.barrier()
             if step > (args.max_train_steps+1):
                 break
-            loss, grad_norm = train_one_step(
+            loss, grad_norm, avg_reward = train_one_step(
                 args,
                 device, 
                 transformer,
@@ -1098,22 +1092,32 @@ def main(args):
             progress_bar.set_postfix(
                 {
                     "loss": f"{loss:.4f}",
+                    "reward": f"{avg_reward:.4f}",
                     "step_time": f"{step_time:.2f}s",
                     "grad_norm": grad_norm,
                 }
             )
             progress_bar.update(1)
             if rank <= 0:
-                wandb.log(
-                    {
-                        "train_loss": loss,
-                        "learning_rate": lr_scheduler.get_last_lr()[0],
-                        "step_time": step_time,
-                        "avg_step_time": avg_step_time,
-                        "grad_norm": grad_norm,
-                    },
-                    step=step,
-                )
+                log_data = {
+                    "step": step,
+                    "train_loss": loss,
+                    "avg_reward": avg_reward,
+                    "learning_rate": lr_scheduler.get_last_lr()[0],
+                    "step_time": step_time,
+                    "avg_step_time": avg_step_time,
+                    "grad_norm": grad_norm,
+                    "epoch": epoch,
+                }
+                
+                # Log to WandB
+                wandb.log(log_data, step=step)
+                
+                # Log to logging.jsonl
+                if args.output_dir is not None:
+                    log_file = os.path.join(args.output_dir, "logging.jsonl")
+                    with open(log_file, "a") as f:
+                        f.write(json.dumps(log_data) + "\n")
 
 
 
@@ -1424,6 +1428,18 @@ if __name__ == "__main__":
         type=int,
         default=4,
         help="per prompt: max rollouts to mock-guess each denoising step (within that prompt's group of num_generations)",
+    )
+    parser.add_argument(
+        "--num_guess_min",
+        type=int,
+        default=0,
+        help="per prompt: min guess count when using variance-adaptive scheduling (train_grpo_qwenimage_eff_mta_varguess)",
+    )
+    parser.add_argument(
+        "--var_guess_tau",
+        type=float,
+        default=1e-4,
+        help="temperature for mapping group velocity variance to guess count (larger tau -> more guessing)",
     )
     
 

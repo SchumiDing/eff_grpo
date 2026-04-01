@@ -8,7 +8,7 @@ export HF_HUB_OFFLINE=1
 
 export LD_LIBRARY_PATH=/mnt/shared-storage-user/mineru4s/dingruiyi/share/cuda-12.8/lib64:$LD_LIBRARY_PATH
 export RANK=0
-CKPT_PTH=/mnt/shared-storage-user/mineru4s/dingruiyi/DanceGRPO/checkpoint-176-0
+CKPT_PTH=/mnt/shared-storage-user/mineru4s/dingruiyi/DanceGRPO/data/outputs/grpo_standard/checkpoint-201-0
 
 python scripts/infer_qwen_dit_hpsv2_single_gpu.py \
   --dit_checkpoint $CKPT_PTH \
@@ -16,7 +16,7 @@ python scripts/infer_qwen_dit_hpsv2_single_gpu.py \
   --embeddings_path data/qwenimage/rl_embeddings_drawbench \
   --hps_checkpoint hps_ckpt/HPS_v2.1_compressed.pt \
   --hps_open_clip hps_ckpt/open_clip_pytorch_model.bin \
-  --output_dir data/outputs/eval_drawbench_grpo_eff_auto_mta_2_ckpt176 \
+  --output_dir data/outputs/eval_drawbench_grpo_standard_ckpt201 \
   --batch_size 100 \
   --sampling_steps 50 \
   --device cuda:0
