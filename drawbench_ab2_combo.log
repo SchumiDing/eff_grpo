@@ -215,4 +215,1382 @@ METHOD 9g: AB2 combo early=0.4 + v_so=2*v_prev-1*v_pp
 Sampling Progress:   0%|          | 0/20 [00:00<?, ?it/s]Sampling Progress:   5%|▌         | 1/20 [00:07<02:17,  7.23s/it]Sampling Progress:  10%|█         | 2/20 [00:14<02:10,  7.25s/it]Sampling Progress:  15%|█▌        | 3/20 [00:21<02:03,  7.26s/it]Sampling Progress:  20%|██        | 4/20 [00:29<01:56,  7.27s/it]Sampling Progress:  25%|██▌       | 5/20 [00:36<01:49,  7.27s/it]Sampling Progress:  30%|███       | 6/20 [00:43<01:41,  7.28s/it]Sampling Progress:  35%|███▌      | 7/20 [00:50<01:34,  7.28s/it]Sampling Progress:  40%|████      | 8/20 [00:58<01:27,  7.28s/it]Sampling Progress:  45%|████▌     | 9/20 [01:05<01:20,  7.28s/it]Sampling Progress:  50%|█████     | 10/20 [01:12<01:12,  7.28s/it]Sampling Progress:  55%|█████▌    | 11/20 [01:20<01:05,  7.28s/it]Sampling Progress:  60%|██████    | 12/20 [01:27<00:58,  7.28s/it]Sampling Progress:  65%|██████▌   | 13/20 [01:34<00:50,  7.27s/it]Sampling Progress:  70%|███████   | 14/20 [01:41<00:43,  7.27s/it]Sampling Progress:  75%|███████▌  | 15/20 [01:49<00:36,  7.27s/it]Sampling Progress:  80%|████████  | 16/20 [01:56<00:29,  7.28s/it]Sampling Progress:  85%|████████▌ | 17/20 [02:03<00:21,  7.28s/it]Sampling Progress:  90%|█████████ | 18/20 [02:10<00:14,  7.28s/it]Sampling Progress:  95%|█████████▌| 19/20 [02:18<00:07,  7.29s/it]Sampling Progress: 100%|██████████| 20/20 [02:29<00:00,  8.39s/it]                                                                  Batch 2/5 completed!
 
 [ab2_abl_ef04_strong] Processing batch 3/5 (prompts 20-29)...
-Sampling Progress:   0%|          | 0/20 [00:00<?, ?it/s]Sampling Progress:   5%|▌         | 1/20 [00:07<02:18,  7.28s/it]Sampling Progress:  10%|█         | 2/20 [00:14<02:11,  7.30s/it]Sampling Progress:  15%|█▌        | 3/20 [00:21<02:04,  7.31s/it]Sampling Progress:  20%|██        | 4/20 [00:29<01:57,  7.32s/it]Sampling Progress:  25%|██▌       | 5/20 [00:36<01:49,  7.32s/it]Sampling Progress:  30%|███       | 6/20 [00:43<01:42,  7.32s/it]
+Sampling Progress:   0%|          | 0/20 [00:00<?, ?it/s]Sampling Progress:   5%|▌         | 1/20 [00:07<02:18,  7.28s/it]Sampling Progress:  10%|█         | 2/20 [00:14<02:11,  7.30s/it]Sampling Progress:  15%|█▌        | 3/20 [00:21<02:04,  7.31s/it]Sampling Progress:  20%|██        | 4/20 [00:29<01:57,  7.32s/it]Sampling Progress:  25%|██▌       | 5/20 [00:36<01:49,  7.32s/it]Sampling Progress:  30%|███       | 6/20 [00:43<01:42,  7.32s/it]Sampling Progress:  35%|███▌      | 7/20 [00:51<01:35,  7.32s/it]Sampling Progress:  40%|████      | 8/20 [00:58<01:27,  7.32s/it]Sampling Progress:  45%|████▌     | 9/20 [01:05<01:20,  7.32s/it]Sampling Progress:  50%|█████     | 10/20 [01:13<01:13,  7.32s/it]Sampling Progress:  55%|█████▌    | 11/20 [01:20<01:05,  7.32s/it]Sampling Progress:  60%|██████    | 12/20 [01:27<00:58,  7.33s/it]Sampling Progress:  65%|██████▌   | 13/20 [01:35<00:51,  7.33s/it]Sampling Progress:  70%|███████   | 14/20 [01:42<00:43,  7.33s/it]Sampling Progress:  75%|███████▌  | 15/20 [01:49<00:36,  7.33s/it]Sampling Progress:  80%|████████  | 16/20 [01:57<00:29,  7.33s/it]Sampling Progress:  85%|████████▌ | 17/20 [02:04<00:21,  7.33s/it]Sampling Progress:  90%|█████████ | 18/20 [02:11<00:14,  7.34s/it]Sampling Progress:  95%|█████████▌| 19/20 [02:19<00:07,  7.33s/it]Sampling Progress: 100%|██████████| 20/20 [02:30<00:00,  8.44s/it]                                                                  Batch 3/5 completed!
+
+[ab2_abl_ef04_strong] Processing batch 4/5 (prompts 30-39)...
+Sampling Progress:   0%|          | 0/20 [00:00<?, ?it/s]Sampling Progress:   5%|▌         | 1/20 [00:07<02:18,  7.27s/it]Sampling Progress:  10%|█         | 2/20 [00:14<02:11,  7.29s/it]Sampling Progress:  15%|█▌        | 3/20 [00:21<02:04,  7.30s/it]Sampling Progress:  20%|██        | 4/20 [00:29<01:56,  7.31s/it]Sampling Progress:  25%|██▌       | 5/20 [00:36<01:49,  7.32s/it]Sampling Progress:  30%|███       | 6/20 [00:43<01:42,  7.31s/it]Sampling Progress:  35%|███▌      | 7/20 [00:51<01:35,  7.31s/it]Sampling Progress:  40%|████      | 8/20 [00:58<01:27,  7.31s/it]Sampling Progress:  45%|████▌     | 9/20 [01:05<01:20,  7.31s/it]Sampling Progress:  50%|█████     | 10/20 [01:13<01:13,  7.31s/it]Sampling Progress:  55%|█████▌    | 11/20 [01:20<01:05,  7.31s/it]Sampling Progress:  60%|██████    | 12/20 [01:27<00:58,  7.32s/it]Sampling Progress:  65%|██████▌   | 13/20 [01:35<00:51,  7.31s/it]Sampling Progress:  70%|███████   | 14/20 [01:42<00:43,  7.31s/it]Sampling Progress:  75%|███████▌  | 15/20 [01:49<00:36,  7.31s/it]Sampling Progress:  80%|████████  | 16/20 [01:56<00:29,  7.32s/it]Sampling Progress:  85%|████████▌ | 17/20 [02:04<00:21,  7.32s/it]Sampling Progress:  90%|█████████ | 18/20 [02:11<00:14,  7.32s/it]Sampling Progress:  95%|█████████▌| 19/20 [02:18<00:07,  7.32s/it]Sampling Progress: 100%|██████████| 20/20 [02:29<00:00,  8.42s/it]                                                                  Batch 4/5 completed!
+
+[ab2_abl_ef04_strong] Processing batch 5/5 (prompts 40-49)...
+Sampling Progress:   0%|          | 0/20 [00:00<?, ?it/s]Sampling Progress:   5%|▌         | 1/20 [00:07<02:16,  7.17s/it]Sampling Progress:  10%|█         | 2/20 [00:14<02:09,  7.19s/it]Sampling Progress:  15%|█▌        | 3/20 [00:21<02:02,  7.19s/it]Sampling Progress:  20%|██        | 4/20 [00:28<01:55,  7.19s/it]Sampling Progress:  25%|██▌       | 5/20 [00:35<01:47,  7.20s/it]Sampling Progress:  30%|███       | 6/20 [00:43<01:40,  7.20s/it]Sampling Progress:  35%|███▌      | 7/20 [00:50<01:33,  7.20s/it]Sampling Progress:  40%|████      | 8/20 [00:57<01:26,  7.20s/it]Sampling Progress:  45%|████▌     | 9/20 [01:04<01:19,  7.21s/it]Sampling Progress:  50%|█████     | 10/20 [01:12<01:12,  7.21s/it]Sampling Progress:  55%|█████▌    | 11/20 [01:19<01:04,  7.22s/it]Sampling Progress:  60%|██████    | 12/20 [01:26<00:57,  7.22s/it]Sampling Progress:  65%|██████▌   | 13/20 [01:33<00:50,  7.22s/it]Sampling Progress:  70%|███████   | 14/20 [01:40<00:43,  7.22s/it]Sampling Progress:  75%|███████▌  | 15/20 [01:48<00:36,  7.22s/it]Sampling Progress:  80%|████████  | 16/20 [01:55<00:28,  7.22s/it]Sampling Progress:  85%|████████▌ | 17/20 [02:02<00:21,  7.22s/it]Sampling Progress:  90%|█████████ | 18/20 [02:09<00:14,  7.22s/it]Sampling Progress:  95%|█████████▌| 19/20 [02:17<00:07,  7.23s/it]Sampling Progress: 100%|██████████| 20/20 [02:27<00:00,  8.32s/it]                                                                  Batch 5/5 completed!
+
+Method ab2_abl_ef04_strong all batches completed!
+  Images -> ./test_results_comparison_rl_embeddings_drawbench_ab2_combo/ab2_abl_ef04_strong
+
+Rank 3 finished inference.
+Rank 2 finished inference.
+Rank 1 finished inference.
+
+================================================================================
+Computing HPSv2 Reward Statistics...
+================================================================================
+
+
+================================================================================
+COMPARISON SUMMARY
+================================================================================
+Total prompts: 200
+Generations per prompt: 12
+Total samples: 2400
+Random seed: 42 (fixed for each rollout)
+
+================================================================================
+Method 1 (Original (No Guess - Baseline 20 steps)):
+================================================================================
+  - Guess steps: 0 (no guess)
+  - HPSv2 Reward (overall):
+    * Mean: 0.2661
+    * Std:  0.0581
+    * Min:  0.0660
+    * Max:  0.3931
+  - Results saved to: ./test_results_comparison_rl_embeddings_drawbench_ab2_combo/original
+
+================================================================================
+Method 2 (MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group)):
+================================================================================
+  - Average guess steps: 6.33 ± 0.47
+  - HPSv2 Reward (overall):
+    * Mean: 0.2524
+    * Std:  0.0591
+    * Min:  0.0820
+    * Max:  0.3870
+  - Results saved to: ./test_results_comparison_rl_embeddings_drawbench_ab2_combo/ab2
+
+================================================================================
+Method 3 (AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp):
+================================================================================
+  - Average guess steps: 6.33 ± 0.47
+  - HPSv2 Reward (overall):
+    * Mean: 0.2544
+    * Std:  0.0592
+    * Min:  0.0836
+    * Max:  0.3879
+  - Results saved to: ./test_results_comparison_rl_embeddings_drawbench_ab2_combo/ab2_abl_ef04
+
+================================================================================
+Method 4 (AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp):
+================================================================================
+  - Average guess steps: 6.33 ± 0.47
+  - HPSv2 Reward (overall):
+    * Mean: 0.2561
+    * Std:  0.0587
+    * Min:  0.0851
+    * Max:  0.3887
+  - Results saved to: ./test_results_comparison_rl_embeddings_drawbench_ab2_combo/ab2_abl_strong
+
+================================================================================
+Method 5 (AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp):
+================================================================================
+  - Average guess steps: 6.33 ± 0.47
+  - HPSv2 Reward (overall):
+    * Mean: 0.2581
+    * Std:  0.0588
+    * Min:  0.0930
+    * Max:  0.3884
+  - Results saved to: ./test_results_comparison_rl_embeddings_drawbench_ab2_combo/ab2_abl_ef04_strong
+
+================================================================================
+Reward Comparison:
+================================================================================
+  - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group) vs Baseline:
+    * Difference: -0.0137
+    * Improvement: -5.14%
+  - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp vs Baseline:
+    * Difference: -0.0117
+    * Improvement: -4.40%
+  - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp vs Baseline:
+    * Difference: -0.0100
+    * Improvement: -3.76%
+  - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp vs Baseline:
+    * Difference: -0.0081
+    * Improvement: -3.03%
+
+  Pairwise Comparisons:
+  - Original (No Guess - Baseline 20 steps) vs MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group):
+    * Difference: +0.0137
+    * Winner: Original (No Guess - Baseline 20 steps) (better by 0.0137)
+  - Original (No Guess - Baseline 20 steps) vs AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp:
+    * Difference: +0.0117
+    * Winner: Original (No Guess - Baseline 20 steps) (better by 0.0117)
+  - Original (No Guess - Baseline 20 steps) vs AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp:
+    * Difference: +0.0100
+    * Winner: Original (No Guess - Baseline 20 steps) (better by 0.0100)
+  - Original (No Guess - Baseline 20 steps) vs AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp:
+    * Difference: +0.0081
+    * Winner: Original (No Guess - Baseline 20 steps) (better by 0.0081)
+  - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group) vs AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp:
+    * Difference: -0.0020
+    * Winner: AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp (better by 0.0020)
+  - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group) vs AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp:
+    * Difference: -0.0037
+    * Winner: AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp (better by 0.0037)
+  - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group) vs AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp:
+    * Difference: -0.0056
+    * Winner: AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp (better by 0.0056)
+  - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp vs AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp:
+    * Difference: -0.0017
+    * Winner: AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp (better by 0.0017)
+  - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp vs AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp:
+    * Difference: -0.0037
+    * Winner: AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp (better by 0.0037)
+  - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp vs AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp:
+    * Difference: -0.0020
+    * Winner: AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp (better by 0.0020)
+
+================================================================================
+Per-Prompt Reward Comparison:
+================================================================================
+  Prompt 0 ('A red colored car....'):
+    - Original (No Guess - Baseline 20 steps): 0.2644
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2445 (-0.0199)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2474 (-0.0170)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2487 (-0.0157)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2532 (-0.0112)
+  Prompt 1 ('A red colored dog....'):
+    - Original (No Guess - Baseline 20 steps): 0.2864
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2715 (-0.0149)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2756 (-0.0107)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2761 (-0.0103)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2783 (-0.0081)
+  Prompt 2 ('A black colored banana....'):
+    - Original (No Guess - Baseline 20 steps): 0.2563
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2419 (-0.0144)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2469 (-0.0094)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2476 (-0.0088)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2480 (-0.0083)
+  Prompt 3 ('A pink colored giraffe....'):
+    - Original (No Guess - Baseline 20 steps): 0.3076
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3000 (-0.0076)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2993 (-0.0083)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3042 (-0.0034)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3049 (-0.0027)
+  Prompt 4 ('A blue bird and a brown bear....'):
+    - Original (No Guess - Baseline 20 steps): 0.3018
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2820 (-0.0198)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2859 (-0.0159)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2869 (-0.0149)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2910 (-0.0107)
+  Prompt 5 ('A white car and a red sheep....'):
+    - Original (No Guess - Baseline 20 steps): 0.3198
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2998 (-0.0200)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3030 (-0.0168)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3013 (-0.0186)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3042 (-0.0156)
+  Prompt 6 ('A red book and a yellow vase....'):
+    - Original (No Guess - Baseline 20 steps): 0.3259
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3018 (-0.0242)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3047 (-0.0212)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3066 (-0.0193)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3086 (-0.0173)
+  Prompt 7 ('A blue coloured pizza....'):
+    - Original (No Guess - Baseline 20 steps): 0.2549
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2473 (-0.0076)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2473 (-0.0076)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2510 (-0.0039)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2517 (-0.0032)
+  Prompt 8 ('An elephant under the sea....'):
+    - Original (No Guess - Baseline 20 steps): 0.3408
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3394 (-0.0015)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3401 (-0.0007)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3411 (+0.0002)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3418 (+0.0010)
+  Prompt 9 ('Two cars on the street....'):
+    - Original (No Guess - Baseline 20 steps): 0.2722
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2527 (-0.0195)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2549 (-0.0173)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2566 (-0.0156)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2595 (-0.0127)
+  Prompt 10 ('One dog on the street....'):
+    - Original (No Guess - Baseline 20 steps): 0.2769
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2717 (-0.0051)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2766 (-0.0002)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2803 (+0.0034)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2852 (+0.0083)
+  Prompt 11 ('Five dogs on the street....'):
+    - Original (No Guess - Baseline 20 steps): 0.3184
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3047 (-0.0137)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3086 (-0.0098)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3096 (-0.0088)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3110 (-0.0073)
+  Prompt 12 ('Two cats and one dog sitting on the grass....'):
+    - Original (No Guess - Baseline 20 steps): 0.2952
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2864 (-0.0088)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2881 (-0.0071)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2905 (-0.0046)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2937 (-0.0015)
+  Prompt 13 ('Three cats and two dogs sitting on the grass....'):
+    - Original (No Guess - Baseline 20 steps): 0.2998
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2864 (-0.0134)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2883 (-0.0115)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2881 (-0.0117)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2900 (-0.0098)
+  Prompt 14 ('A triangular pink stop sign. A pink stop sign in t...'):
+    - Original (No Guess - Baseline 20 steps): 0.2622
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2424 (-0.0198)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2441 (-0.0181)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2408 (-0.0214)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2407 (-0.0215)
+  Prompt 15 ('A collection of nail is sitting on a table....'):
+    - Original (No Guess - Baseline 20 steps): 0.2002
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1815 (-0.0187)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1829 (-0.0173)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1881 (-0.0121)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1859 (-0.0143)
+  Prompt 16 ('An illustration of a small green elephant standing...'):
+    - Original (No Guess - Baseline 20 steps): 0.2979
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2820 (-0.0159)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2844 (-0.0134)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2893 (-0.0085)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2896 (-0.0083)
+  Prompt 17 ('A stack of 3 books. A green book is on the top, si...'):
+    - Original (No Guess - Baseline 20 steps): 0.2446
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2256 (-0.0190)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2290 (-0.0156)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2268 (-0.0178)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2296 (-0.0150)
+  Prompt 18 ('A side view of an owl sitting in a field....'):
+    - Original (No Guess - Baseline 20 steps): 0.3013
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2844 (-0.0168)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2905 (-0.0107)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2871 (-0.0142)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2910 (-0.0103)
+  Prompt 19 ('A small vessel propelled on water by oars, sails, ...'):
+    - Original (No Guess - Baseline 20 steps): 0.2269
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2239 (-0.0031)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2231 (-0.0038)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2253 (-0.0016)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2256 (-0.0013)
+  Prompt 20 ('A separate seat for one person, typically with a b...'):
+    - Original (No Guess - Baseline 20 steps): 0.2207
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2126 (-0.0081)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2137 (-0.0070)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2148 (-0.0059)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2159 (-0.0048)
+  Prompt 21 ('A large plant-eating domesticated mammal with soli...'):
+    - Original (No Guess - Baseline 20 steps): 0.2390
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2245 (-0.0145)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2275 (-0.0115)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2275 (-0.0115)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2297 (-0.0093)
+  Prompt 22 ('An organ of soft nervous tissue contained in the s...'):
+    - Original (No Guess - Baseline 20 steps): 0.1682
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1591 (-0.0092)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1570 (-0.0112)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1610 (-0.0072)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1619 (-0.0063)
+  Prompt 23 ('A large thick-skinned semiaquatic African mammal, ...'):
+    - Original (No Guess - Baseline 20 steps): 0.2292
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2120 (-0.0172)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2163 (-0.0129)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2148 (-0.0144)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2190 (-0.0103)
+  Prompt 24 ('A grocery store refrigerator has pint cartons of m...'):
+    - Original (No Guess - Baseline 20 steps): 0.2194
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2175 (-0.0018)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2197 (+0.0004)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2178 (-0.0016)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2195 (+0.0001)
+  Prompt 25 ('A pear cut into seven pieces arranged in a ring....'):
+    - Original (No Guess - Baseline 20 steps): 0.2494
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2288 (-0.0206)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2289 (-0.0205)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2327 (-0.0167)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2347 (-0.0146)
+  Prompt 26 ('Tcennis rpacket....'):
+    - Original (No Guess - Baseline 20 steps): 0.1715
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1669 (-0.0046)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1682 (-0.0033)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1667 (-0.0048)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1669 (-0.0046)
+  Prompt 27 ('Pafrking metr....'):
+    - Original (No Guess - Baseline 20 steps): 0.1842
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1832 (-0.0010)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1824 (-0.0018)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1814 (-0.0028)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1808 (-0.0034)
+  Prompt 28 ('A domesticated carnivvorous mzammal that typicball...'):
+    - Original (No Guess - Baseline 20 steps): 0.1844
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1685 (-0.0160)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1680 (-0.0165)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1713 (-0.0132)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1711 (-0.0133)
+  Prompt 29 ('A bicycle on top of a boat....'):
+    - Original (No Guess - Baseline 20 steps): 0.2756
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2457 (-0.0299)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2474 (-0.0282)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2578 (-0.0178)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2629 (-0.0127)
+  Prompt 30 ('A donut underneath a toilet....'):
+    - Original (No Guess - Baseline 20 steps): 0.2788
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2515 (-0.0273)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2524 (-0.0264)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2559 (-0.0229)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2573 (-0.0215)
+  Prompt 31 ('A banana on the left of an apple....'):
+    - Original (No Guess - Baseline 20 steps): 0.2891
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2842 (-0.0049)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2856 (-0.0034)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2861 (-0.0029)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2874 (-0.0017)
+  Prompt 32 ('A carrot on the left of a broccoli....'):
+    - Original (No Guess - Baseline 20 steps): 0.3149
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3103 (-0.0046)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3110 (-0.0039)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3108 (-0.0042)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3115 (-0.0034)
+  Prompt 33 ('A sheep to the right of a wine glass....'):
+    - Original (No Guess - Baseline 20 steps): 0.3657
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3567 (-0.0090)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3586 (-0.0071)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3584 (-0.0073)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3604 (-0.0054)
+  Prompt 34 ('Matutinal....'):
+    - Original (No Guess - Baseline 20 steps): 0.1831
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1772 (-0.0059)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1792 (-0.0039)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1813 (-0.0018)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1821 (-0.0010)
+  Prompt 35 ('Octothorpe....'):
+    - Original (No Guess - Baseline 20 steps): 0.1688
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1611 (-0.0077)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1606 (-0.0082)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1608 (-0.0081)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1621 (-0.0067)
+  Prompt 36 ('A photo of a confused grizzly bear in calculus cla...'):
+    - Original (No Guess - Baseline 20 steps): 0.3330
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3164 (-0.0166)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3228 (-0.0103)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3215 (-0.0115)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3252 (-0.0078)
+  Prompt 37 ('A 1960s yearbook photo with animals dressed as hum...'):
+    - Original (No Guess - Baseline 20 steps): 0.1832
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1779 (-0.0054)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1776 (-0.0056)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1802 (-0.0031)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1803 (-0.0029)
+  Prompt 38 ('An IT-guy trying to fix hardware of a PC tower is ...'):
+    - Original (No Guess - Baseline 20 steps): 0.2461
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2349 (-0.0112)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2410 (-0.0051)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2478 (+0.0017)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2496 (+0.0035)
+  Prompt 39 ('Greek statue of a man tripping over a cat....'):
+    - Original (No Guess - Baseline 20 steps): 0.2930
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2749 (-0.0181)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2786 (-0.0144)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2769 (-0.0161)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2805 (-0.0125)
+  Prompt 40 ('An oil painting portrait of the regal Burger King ...'):
+    - Original (No Guess - Baseline 20 steps): 0.3503
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3457 (-0.0046)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3462 (-0.0042)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3479 (-0.0024)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3474 (-0.0029)
+  Prompt 41 ('A screenshot of an iOS app for ordering different ...'):
+    - Original (No Guess - Baseline 20 steps): 0.2200
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1882 (-0.0317)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1925 (-0.0275)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1947 (-0.0253)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1989 (-0.0211)
+  Prompt 42 ('A spider with a moustache bidding an equally gentl...'):
+    - Original (No Guess - Baseline 20 steps): 0.1991
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1848 (-0.0143)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1914 (-0.0077)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1888 (-0.0103)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1914 (-0.0077)
+  Prompt 43 ('A magnifying glass over a page of a 1950s batman c...'):
+    - Original (No Guess - Baseline 20 steps): 0.3003
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2537 (-0.0466)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2571 (-0.0432)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2617 (-0.0386)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2668 (-0.0334)
+  Prompt 44 ('Illustration of a mouse using a mushroom as an umb...'):
+    - Original (No Guess - Baseline 20 steps): 0.3420
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3467 (+0.0046)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3477 (+0.0056)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3484 (+0.0063)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3481 (+0.0061)
+  Prompt 45 ('A storefront with 'Diffusion' written on it....'):
+    - Original (No Guess - Baseline 20 steps): 0.2778
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2590 (-0.0188)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2600 (-0.0178)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2607 (-0.0171)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2639 (-0.0139)
+  Prompt 46 ('A storefront with 'Google Brain Toronto' written o...'):
+    - Original (No Guess - Baseline 20 steps): 0.2683
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2478 (-0.0205)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2507 (-0.0176)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2482 (-0.0201)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2576 (-0.0107)
+  Prompt 47 ('A sign that says 'Text to Image'....'):
+    - Original (No Guess - Baseline 20 steps): 0.2515
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2192 (-0.0322)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2229 (-0.0286)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2251 (-0.0264)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2284 (-0.0231)
+  Prompt 48 ('A sign that says 'Google Research Pizza Cafe'....'):
+    - Original (No Guess - Baseline 20 steps): 0.2800
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2449 (-0.0352)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2454 (-0.0347)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2402 (-0.0398)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2430 (-0.0370)
+  Prompt 49 ('New York Skyline with 'NeurIPS' written with firew...'):
+    - Original (No Guess - Baseline 20 steps): 0.2864
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2773 (-0.0090)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2773 (-0.0090)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2822 (-0.0042)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2812 (-0.0051)
+  Prompt 50 ('A black colored car....'):
+    - Original (No Guess - Baseline 20 steps): 0.2695
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2600 (-0.0095)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2625 (-0.0071)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2646 (-0.0049)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2668 (-0.0027)
+  Prompt 51 ('A blue colored dog....'):
+    - Original (No Guess - Baseline 20 steps): 0.2979
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2981 (+0.0002)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2996 (+0.0017)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3000 (+0.0022)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3018 (+0.0039)
+  Prompt 52 ('A white colored sandwich....'):
+    - Original (No Guess - Baseline 20 steps): 0.2498
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2367 (-0.0131)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2378 (-0.0120)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2395 (-0.0103)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2428 (-0.0070)
+  Prompt 53 ('A yellow colored giraffe....'):
+    - Original (No Guess - Baseline 20 steps): 0.2900
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2703 (-0.0198)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2715 (-0.0186)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2729 (-0.0171)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2751 (-0.0149)
+  Prompt 54 ('A green apple and a black backpack....'):
+    - Original (No Guess - Baseline 20 steps): 0.3169
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2925 (-0.0244)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2981 (-0.0188)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2971 (-0.0198)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3003 (-0.0166)
+  Prompt 55 ('A brown bird and a blue bear....'):
+    - Original (No Guess - Baseline 20 steps): 0.2849
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2820 (-0.0029)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2830 (-0.0020)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2830 (-0.0020)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2842 (-0.0007)
+  Prompt 56 ('A horse riding an astronaut....'):
+    - Original (No Guess - Baseline 20 steps): 0.3428
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3279 (-0.0149)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3301 (-0.0127)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3318 (-0.0110)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3335 (-0.0093)
+  Prompt 57 ('Hovering cow abducting aliens....'):
+    - Original (No Guess - Baseline 20 steps): 0.3159
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3057 (-0.0103)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3098 (-0.0061)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3076 (-0.0083)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3123 (-0.0037)
+  Prompt 58 ('Rainbow coloured penguin....'):
+    - Original (No Guess - Baseline 20 steps): 0.3210
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3054 (-0.0156)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3066 (-0.0144)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3086 (-0.0125)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3098 (-0.0112)
+  Prompt 59 ('Three cars on the street....'):
+    - Original (No Guess - Baseline 20 steps): 0.2534
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2404 (-0.0131)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2428 (-0.0106)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2433 (-0.0101)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2449 (-0.0085)
+  Prompt 60 ('Two dogs on the street....'):
+    - Original (No Guess - Baseline 20 steps): 0.3047
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2859 (-0.0188)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2896 (-0.0151)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2927 (-0.0120)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2947 (-0.0100)
+  Prompt 61 ('One cat and one dog sitting on the grass....'):
+    - Original (No Guess - Baseline 20 steps): 0.3188
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3147 (-0.0042)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3157 (-0.0032)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3152 (-0.0037)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3179 (-0.0010)
+  Prompt 62 ('Two cats and two dogs sitting on the grass....'):
+    - Original (No Guess - Baseline 20 steps): 0.2817
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2690 (-0.0127)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2759 (-0.0059)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2771 (-0.0046)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2820 (+0.0002)
+  Prompt 63 ('Three cats and three dogs sitting on the grass....'):
+    - Original (No Guess - Baseline 20 steps): 0.2700
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2571 (-0.0129)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2583 (-0.0117)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2612 (-0.0088)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2625 (-0.0076)
+  Prompt 64 ('A cube made of denim. A cube with the texture of d...'):
+    - Original (No Guess - Baseline 20 steps): 0.2971
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2927 (-0.0044)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2927 (-0.0044)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2937 (-0.0034)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2930 (-0.0042)
+  Prompt 65 ('A single clock is sitting on a table....'):
+    - Original (No Guess - Baseline 20 steps): 0.2756
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2642 (-0.0115)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2693 (-0.0063)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2690 (-0.0066)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2710 (-0.0046)
+  Prompt 66 ('A small blue book sitting on a large red book....'):
+    - Original (No Guess - Baseline 20 steps): 0.2935
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2827 (-0.0107)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2852 (-0.0083)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2881 (-0.0054)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2900 (-0.0034)
+  Prompt 67 ('An emoji of a baby panda wearing a red hat, green ...'):
+    - Original (No Guess - Baseline 20 steps): 0.2856
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2700 (-0.0156)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2727 (-0.0129)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2715 (-0.0142)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2744 (-0.0112)
+  Prompt 68 ('A cross-section view of a brain....'):
+    - Original (No Guess - Baseline 20 steps): 0.2142
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1981 (-0.0161)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1976 (-0.0166)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2061 (-0.0082)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2068 (-0.0074)
+  Prompt 69 ('A connection point by which firefighters can tap i...'):
+    - Original (No Guess - Baseline 20 steps): 0.2145
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1965 (-0.0179)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1964 (-0.0181)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2008 (-0.0137)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2025 (-0.0120)
+  Prompt 70 ('An appliance or compartment which is artificially ...'):
+    - Original (No Guess - Baseline 20 steps): 0.2314
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2213 (-0.0101)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2229 (-0.0085)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2246 (-0.0068)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2273 (-0.0042)
+  Prompt 71 ('A long curved fruit which grows in clusters and ha...'):
+    - Original (No Guess - Baseline 20 steps): 0.2000
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1941 (-0.0059)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1927 (-0.0072)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1975 (-0.0024)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1993 (-0.0006)
+  Prompt 72 ('An American multinational technology company that ...'):
+    - Original (No Guess - Baseline 20 steps): 0.1315
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1332 (+0.0017)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1335 (+0.0021)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1361 (+0.0046)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1364 (+0.0049)
+  Prompt 73 ('A machine resembling a human being and able to rep...'):
+    - Original (No Guess - Baseline 20 steps): 0.2178
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2045 (-0.0133)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2052 (-0.0126)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2057 (-0.0121)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2054 (-0.0123)
+  Prompt 74 ('In late afternoon in January in New England, a man...'):
+    - Original (No Guess - Baseline 20 steps): 0.2737
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2751 (+0.0015)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2749 (+0.0012)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2712 (-0.0024)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2739 (+0.0002)
+  Prompt 75 ('A donkey and an octopus are playing a game. The do...'):
+    - Original (No Guess - Baseline 20 steps): 0.2932
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2893 (-0.0039)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2908 (-0.0024)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2881 (-0.0051)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2900 (-0.0032)
+  Prompt 76 ('Bzaseball galove....'):
+    - Original (No Guess - Baseline 20 steps): 0.1901
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1689 (-0.0211)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1689 (-0.0211)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1770 (-0.0131)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1787 (-0.0114)
+  Prompt 77 ('A smafml vessef epropoeilled on watvewr by ors, sa...'):
+    - Original (No Guess - Baseline 20 steps): 0.1582
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1545 (-0.0037)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1533 (-0.0049)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1561 (-0.0021)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1547 (-0.0035)
+  Prompt 78 ('A ldarge keybord msical instroument lwith a woden ...'):
+    - Original (No Guess - Baseline 20 steps): 0.2128
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1973 (-0.0155)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1993 (-0.0134)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2014 (-0.0114)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2048 (-0.0079)
+  Prompt 79 ('An umbrella on top of a spoon....'):
+    - Original (No Guess - Baseline 20 steps): 0.2512
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2230 (-0.0282)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2250 (-0.0262)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2281 (-0.0231)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2332 (-0.0181)
+  Prompt 80 ('A hair drier underneath a sheep....'):
+    - Original (No Guess - Baseline 20 steps): 0.2729
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2651 (-0.0078)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2673 (-0.0056)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2720 (-0.0010)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2751 (+0.0022)
+  Prompt 81 ('A couch on the left of a chair....'):
+    - Original (No Guess - Baseline 20 steps): 0.2673
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2544 (-0.0129)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2551 (-0.0122)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2532 (-0.0142)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2551 (-0.0122)
+  Prompt 82 ('A pizza on the right of a suitcase....'):
+    - Original (No Guess - Baseline 20 steps): 0.3071
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2942 (-0.0129)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2964 (-0.0107)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2942 (-0.0129)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2961 (-0.0110)
+  Prompt 83 ('A zebra to the right of a fire hydrant....'):
+    - Original (No Guess - Baseline 20 steps): 0.3271
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3069 (-0.0203)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3101 (-0.0171)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3108 (-0.0164)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3142 (-0.0129)
+  Prompt 84 ('Peristeronic....'):
+    - Original (No Guess - Baseline 20 steps): 0.1555
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1547 (-0.0009)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1545 (-0.0010)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1567 (+0.0012)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1576 (+0.0021)
+  Prompt 85 ('A church with stained glass windows depicting a ha...'):
+    - Original (No Guess - Baseline 20 steps): 0.2485
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2249 (-0.0237)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2256 (-0.0229)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2284 (-0.0201)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2303 (-0.0182)
+  Prompt 86 ('An ancient Egyptian painting depicting an argument...'):
+    - Original (No Guess - Baseline 20 steps): 0.2627
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2637 (+0.0010)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2634 (+0.0007)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2659 (+0.0032)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2649 (+0.0022)
+  Prompt 87 ('Lego Arnold Schwarzenegger....'):
+    - Original (No Guess - Baseline 20 steps): 0.2080
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1885 (-0.0195)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1919 (-0.0161)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1936 (-0.0144)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1964 (-0.0116)
+  Prompt 88 ('35mm macro shot a kitten licking a baby duck, stud...'):
+    - Original (No Guess - Baseline 20 steps): 0.3096
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2839 (-0.0256)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2896 (-0.0200)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2856 (-0.0239)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2913 (-0.0183)
+  Prompt 89 ('An old photograph of a 1920s airship shaped like a...'):
+    - Original (No Guess - Baseline 20 steps): 0.2957
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2686 (-0.0271)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2700 (-0.0256)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2695 (-0.0261)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2708 (-0.0249)
+  Prompt 90 ('A keyboard made of water, the water is made of lig...'):
+    - Original (No Guess - Baseline 20 steps): 0.2607
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2524 (-0.0083)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2532 (-0.0076)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2529 (-0.0078)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2554 (-0.0054)
+  Prompt 91 ('A real life photography of super mario, 8k Ultra H...'):
+    - Original (No Guess - Baseline 20 steps): 0.3086
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2896 (-0.0190)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2927 (-0.0159)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2959 (-0.0127)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2974 (-0.0112)
+  Prompt 92 ('A photocopy of a photograph of a painting of a scu...'):
+    - Original (No Guess - Baseline 20 steps): 0.2494
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2362 (-0.0132)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2378 (-0.0116)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2404 (-0.0090)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2407 (-0.0087)
+  Prompt 93 ('A car playing soccer, digital art....'):
+    - Original (No Guess - Baseline 20 steps): 0.2866
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2825 (-0.0042)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2856 (-0.0010)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2859 (-0.0007)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2886 (+0.0020)
+  Prompt 94 ('A realistic photo of a Pomeranian dressed up like ...'):
+    - Original (No Guess - Baseline 20 steps): 0.2927
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2737 (-0.0190)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2761 (-0.0166)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2778 (-0.0149)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2798 (-0.0129)
+  Prompt 95 ('A storefront with 'Text to Image' written on it....'):
+    - Original (No Guess - Baseline 20 steps): 0.2471
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2280 (-0.0190)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2288 (-0.0183)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2352 (-0.0118)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2334 (-0.0137)
+  Prompt 96 ('A storefront with 'Google Research Pizza Cafe' wri...'):
+    - Original (No Guess - Baseline 20 steps): 0.2273
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2173 (-0.0100)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2178 (-0.0095)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2170 (-0.0103)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2162 (-0.0111)
+  Prompt 97 ('A sign that says 'NeurIPS'....'):
+    - Original (No Guess - Baseline 20 steps): 0.2227
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2065 (-0.0161)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2078 (-0.0149)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2075 (-0.0151)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2123 (-0.0104)
+  Prompt 98 ('New York Skyline with 'Hello World' written with f...'):
+    - Original (No Guess - Baseline 20 steps): 0.3328
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3298 (-0.0029)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3301 (-0.0027)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3328 (+0.0000)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3330 (+0.0002)
+  Prompt 99 ('New York Skyline with 'Deep Learning' written with...'):
+    - Original (No Guess - Baseline 20 steps): 0.3301
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3169 (-0.0132)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3174 (-0.0127)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3181 (-0.0120)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3188 (-0.0112)
+  Prompt 100 ('A pink colored car....'):
+    - Original (No Guess - Baseline 20 steps): 0.2622
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2474 (-0.0148)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2491 (-0.0131)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2520 (-0.0103)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2534 (-0.0088)
+  Prompt 101 ('A green colored banana....'):
+    - Original (No Guess - Baseline 20 steps): 0.2627
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2510 (-0.0117)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2524 (-0.0103)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2522 (-0.0105)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2537 (-0.0090)
+  Prompt 102 ('A black colored sandwich....'):
+    - Original (No Guess - Baseline 20 steps): 0.2673
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2639 (-0.0034)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2639 (-0.0034)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2654 (-0.0020)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2654 (-0.0020)
+  Prompt 103 ('A brown colored giraffe....'):
+    - Original (No Guess - Baseline 20 steps): 0.2788
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2690 (-0.0098)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2717 (-0.0071)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2715 (-0.0073)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2727 (-0.0061)
+  Prompt 104 ('A green cup and a blue cell phone....'):
+    - Original (No Guess - Baseline 20 steps): 0.3193
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2964 (-0.0229)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2981 (-0.0212)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2971 (-0.0222)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2998 (-0.0195)
+  Prompt 105 ('A black apple and a green backpack....'):
+    - Original (No Guess - Baseline 20 steps): 0.3091
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2939 (-0.0151)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2964 (-0.0127)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2966 (-0.0125)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2986 (-0.0105)
+  Prompt 106 ('A pizza cooking an oven....'):
+    - Original (No Guess - Baseline 20 steps): 0.2847
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2634 (-0.0212)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2656 (-0.0190)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2681 (-0.0166)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2712 (-0.0134)
+  Prompt 107 ('A panda making latte art....'):
+    - Original (No Guess - Baseline 20 steps): 0.3293
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3071 (-0.0222)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3096 (-0.0198)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3154 (-0.0139)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3191 (-0.0103)
+  Prompt 108 ('A fish eating a pelican....'):
+    - Original (No Guess - Baseline 20 steps): 0.2954
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2839 (-0.0115)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2847 (-0.0107)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2866 (-0.0088)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2886 (-0.0068)
+  Prompt 109 ('Four cars on the street....'):
+    - Original (No Guess - Baseline 20 steps): 0.2137
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2054 (-0.0083)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2084 (-0.0054)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2125 (-0.0012)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2152 (+0.0015)
+  Prompt 110 ('Three dogs on the street....'):
+    - Original (No Guess - Baseline 20 steps): 0.3328
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3230 (-0.0098)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3250 (-0.0078)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3262 (-0.0066)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3286 (-0.0042)
+  Prompt 111 ('One cat and two dogs sitting on the grass....'):
+    - Original (No Guess - Baseline 20 steps): 0.3003
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2690 (-0.0312)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2705 (-0.0298)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2732 (-0.0271)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2739 (-0.0264)
+  Prompt 112 ('Two cats and three dogs sitting on the grass....'):
+    - Original (No Guess - Baseline 20 steps): 0.2991
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2844 (-0.0146)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2864 (-0.0127)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2866 (-0.0125)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2871 (-0.0120)
+  Prompt 113 ('A triangular purple flower pot. A purple flower po...'):
+    - Original (No Guess - Baseline 20 steps): 0.2830
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2683 (-0.0146)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2688 (-0.0142)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2725 (-0.0105)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2727 (-0.0103)
+  Prompt 114 ('A sphere made of kitchen tile. A sphere with the t...'):
+    - Original (No Guess - Baseline 20 steps): 0.2463
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2440 (-0.0023)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2444 (-0.0020)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2441 (-0.0022)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2450 (-0.0013)
+  Prompt 115 ('A couple of glasses are sitting on a table....'):
+    - Original (No Guess - Baseline 20 steps): 0.2532
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2421 (-0.0111)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2438 (-0.0094)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2473 (-0.0059)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2478 (-0.0054)
+  Prompt 116 ('A stack of 3 plates. A blue plate is on the top, s...'):
+    - Original (No Guess - Baseline 20 steps): 0.2097
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1982 (-0.0115)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2000 (-0.0098)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2020 (-0.0077)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2028 (-0.0070)
+  Prompt 117 ('An emoji of a baby panda wearing a red hat, blue g...'):
+    - Original (No Guess - Baseline 20 steps): 0.2854
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2695 (-0.0159)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2737 (-0.0117)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2734 (-0.0120)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2773 (-0.0081)
+  Prompt 118 ('A vehicle composed of two wheels held in a frame o...'):
+    - Original (No Guess - Baseline 20 steps): 0.2091
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1982 (-0.0109)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1993 (-0.0098)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2013 (-0.0078)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2035 (-0.0056)
+  Prompt 119 ('A machine next to a parking space in a street, int...'):
+    - Original (No Guess - Baseline 20 steps): 0.1896
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1725 (-0.0171)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1749 (-0.0146)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1766 (-0.0129)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1790 (-0.0106)
+  Prompt 120 ('A mechanical or electrical device for measuring ti...'):
+    - Original (No Guess - Baseline 20 steps): 0.2136
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1990 (-0.0146)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2019 (-0.0117)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2028 (-0.0109)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2053 (-0.0083)
+  Prompt 121 ('A small domesticated carnivorous mammal with soft ...'):
+    - Original (No Guess - Baseline 20 steps): 0.1991
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1816 (-0.0175)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1844 (-0.0146)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1881 (-0.0110)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1931 (-0.0060)
+  Prompt 122 ('A large keyboard musical instrument with a wooden ...'):
+    - Original (No Guess - Baseline 20 steps): 0.2053
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1952 (-0.0101)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1974 (-0.0079)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2006 (-0.0048)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2030 (-0.0023)
+  Prompt 123 ('Paying for a quarter-sized pizza with a pizza-size...'):
+    - Original (No Guess - Baseline 20 steps): 0.2157
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1815 (-0.0342)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1906 (-0.0251)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1932 (-0.0225)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2054 (-0.0103)
+  Prompt 124 ('An elephant is behind a tree. You can see the trun...'):
+    - Original (No Guess - Baseline 20 steps): 0.3115
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3037 (-0.0078)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3044 (-0.0071)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3010 (-0.0105)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3027 (-0.0088)
+  Prompt 125 ('Supreme Court Justices play a baseball game with t...'):
+    - Original (No Guess - Baseline 20 steps): 0.2484
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2324 (-0.0160)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2347 (-0.0137)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2349 (-0.0135)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2383 (-0.0101)
+  Prompt 126 ('Rbefraigerator....'):
+    - Original (No Guess - Baseline 20 steps): 0.1702
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1637 (-0.0065)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1650 (-0.0051)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1652 (-0.0050)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1648 (-0.0054)
+  Prompt 127 ('A sjmall domesticated carnivorious mammnal with so...'):
+    - Original (No Guess - Baseline 20 steps): 0.1660
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1564 (-0.0096)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1584 (-0.0076)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1598 (-0.0062)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1624 (-0.0037)
+  Prompt 128 ('A train on top of a surfboard....'):
+    - Original (No Guess - Baseline 20 steps): 0.3047
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2891 (-0.0156)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2908 (-0.0139)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2927 (-0.0120)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2957 (-0.0090)
+  Prompt 129 ('A laptop on top of a teddy bear....'):
+    - Original (No Guess - Baseline 20 steps): 0.2725
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2627 (-0.0098)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2717 (-0.0007)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2603 (-0.0122)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2668 (-0.0056)
+  Prompt 130 ('A tennis racket underneath a traffic light....'):
+    - Original (No Guess - Baseline 20 steps): 0.2354
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2146 (-0.0208)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2166 (-0.0188)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2188 (-0.0166)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2230 (-0.0123)
+  Prompt 131 ('A car on the left of a bus....'):
+    - Original (No Guess - Baseline 20 steps): 0.2588
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2372 (-0.0216)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2406 (-0.0182)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2426 (-0.0162)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2476 (-0.0112)
+  Prompt 132 ('A cat on the right of a tennis racket....'):
+    - Original (No Guess - Baseline 20 steps): 0.3096
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2778 (-0.0317)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2866 (-0.0229)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2856 (-0.0239)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2908 (-0.0188)
+  Prompt 133 ('Acersecomicke....'):
+    - Original (No Guess - Baseline 20 steps): 0.1721
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1664 (-0.0057)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1661 (-0.0060)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1697 (-0.0024)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1725 (+0.0004)
+  Prompt 134 ('Artophagous....'):
+    - Original (No Guess - Baseline 20 steps): 0.1964
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1930 (-0.0034)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1936 (-0.0028)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1958 (-0.0006)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1959 (-0.0005)
+  Prompt 135 ('Painting of the orange cat Otto von Garfield, Coun...'):
+    - Original (No Guess - Baseline 20 steps): 0.2083
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1982 (-0.0100)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2023 (-0.0060)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2073 (-0.0010)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2062 (-0.0021)
+  Prompt 136 ('A fluffy baby sloth with a knitted hat trying to f...'):
+    - Original (No Guess - Baseline 20 steps): 0.2727
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2632 (-0.0095)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2661 (-0.0066)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2656 (-0.0071)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2683 (-0.0044)
+  Prompt 137 ('A yellow and black bus cruising through the rainfo...'):
+    - Original (No Guess - Baseline 20 steps): 0.3376
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3308 (-0.0068)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3311 (-0.0066)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3335 (-0.0042)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3342 (-0.0034)
+  Prompt 138 ('McDonalds Church....'):
+    - Original (No Guess - Baseline 20 steps): 0.2991
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2798 (-0.0193)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2834 (-0.0156)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2852 (-0.0139)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2900 (-0.0090)
+  Prompt 139 ('Photo of a cat singing in a barbershop quartet....'):
+    - Original (No Guess - Baseline 20 steps): 0.3074
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2852 (-0.0222)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2913 (-0.0161)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2886 (-0.0188)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2932 (-0.0142)
+  Prompt 140 ('Painting of Mona Lisa but the view is from behind ...'):
+    - Original (No Guess - Baseline 20 steps): 0.2292
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2207 (-0.0085)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2203 (-0.0089)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2239 (-0.0054)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2240 (-0.0052)
+  Prompt 141 ('Colouring page of large cats climbing the eifel to...'):
+    - Original (No Guess - Baseline 20 steps): 0.2717
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2487 (-0.0231)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2494 (-0.0223)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2581 (-0.0137)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2581 (-0.0137)
+  Prompt 142 ('A bridge connecting Europe and North America on th...'):
+    - Original (No Guess - Baseline 20 steps): 0.2349
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2212 (-0.0137)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2229 (-0.0120)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2260 (-0.0089)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2283 (-0.0066)
+  Prompt 143 ('Darth Vader playing with raccoon in Mars during su...'):
+    - Original (No Guess - Baseline 20 steps): 0.3621
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3528 (-0.0093)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3521 (-0.0100)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3560 (-0.0061)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3569 (-0.0051)
+  Prompt 144 ('A pyramid made of falafel with a partial solar ecl...'):
+    - Original (No Guess - Baseline 20 steps): 0.3242
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3101 (-0.0142)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3101 (-0.0142)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3115 (-0.0127)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3118 (-0.0125)
+  Prompt 145 ('A storefront with 'NeurIPS' written on it....'):
+    - Original (No Guess - Baseline 20 steps): 0.2568
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2435 (-0.0133)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2451 (-0.0117)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2450 (-0.0118)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2474 (-0.0094)
+  Prompt 146 ('A sign that says 'Hello World'....'):
+    - Original (No Guess - Baseline 20 steps): 0.2391
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2145 (-0.0247)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2159 (-0.0232)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2214 (-0.0177)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2227 (-0.0165)
+  Prompt 147 ('A sign that says 'Deep Learning'....'):
+    - Original (No Guess - Baseline 20 steps): 0.2974
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2542 (-0.0432)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2556 (-0.0417)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2469 (-0.0504)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2520 (-0.0454)
+  Prompt 148 ('New York Skyline with 'Diffusion' written with fir...'):
+    - Original (No Guess - Baseline 20 steps): 0.3059
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3047 (-0.0012)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3040 (-0.0020)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3074 (+0.0015)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3066 (+0.0007)
+  Prompt 149 ('New York Skyline with 'Google Brain Toronto' writt...'):
+    - Original (No Guess - Baseline 20 steps): 0.2793
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2786 (-0.0007)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2786 (-0.0007)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2798 (+0.0005)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2812 (+0.0020)
+  Prompt 150 ('A black colored dog....'):
+    - Original (No Guess - Baseline 20 steps): 0.2725
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2427 (-0.0298)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2456 (-0.0269)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2524 (-0.0200)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2537 (-0.0188)
+  Prompt 151 ('A red colored banana....'):
+    - Original (No Guess - Baseline 20 steps): 0.2556
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2374 (-0.0182)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2378 (-0.0178)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2375 (-0.0181)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2386 (-0.0170)
+  Prompt 152 ('An orange colored sandwich....'):
+    - Original (No Guess - Baseline 20 steps): 0.2468
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2401 (-0.0067)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2411 (-0.0057)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2456 (-0.0012)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2465 (-0.0004)
+  Prompt 153 ('A red car and a white sheep....'):
+    - Original (No Guess - Baseline 20 steps): 0.3347
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3220 (-0.0127)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3267 (-0.0081)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3245 (-0.0103)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3301 (-0.0046)
+  Prompt 154 ('A yellow book and a red vase....'):
+    - Original (No Guess - Baseline 20 steps): 0.3108
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3027 (-0.0081)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3044 (-0.0063)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3054 (-0.0054)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3069 (-0.0039)
+  Prompt 155 ('A blue cup and a green cell phone....'):
+    - Original (No Guess - Baseline 20 steps): 0.3152
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3040 (-0.0112)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3066 (-0.0085)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3047 (-0.0105)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3069 (-0.0083)
+  Prompt 156 ('A bird scaring a scarecrow....'):
+    - Original (No Guess - Baseline 20 steps): 0.3093
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2869 (-0.0225)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2896 (-0.0198)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2871 (-0.0222)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2900 (-0.0193)
+  Prompt 157 ('A shark in the desert....'):
+    - Original (No Guess - Baseline 20 steps): 0.3276
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3027 (-0.0249)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3035 (-0.0242)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3069 (-0.0208)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3079 (-0.0198)
+  Prompt 158 ('One car on the street....'):
+    - Original (No Guess - Baseline 20 steps): 0.2505
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2278 (-0.0227)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2301 (-0.0204)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2380 (-0.0125)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2426 (-0.0079)
+  Prompt 159 ('Five cars on the street....'):
+    - Original (No Guess - Baseline 20 steps): 0.2012
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1816 (-0.0195)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1843 (-0.0168)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1865 (-0.0146)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1898 (-0.0114)
+  Prompt 160 ('Four dogs on the street....'):
+    - Original (No Guess - Baseline 20 steps): 0.3140
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3027 (-0.0112)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3062 (-0.0078)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3074 (-0.0066)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3083 (-0.0056)
+  Prompt 161 ('One cat and three dogs sitting on the grass....'):
+    - Original (No Guess - Baseline 20 steps): 0.3044
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2903 (-0.0142)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2915 (-0.0129)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2917 (-0.0127)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2971 (-0.0073)
+  Prompt 162 ('Three cats and one dog sitting on the grass....'):
+    - Original (No Guess - Baseline 20 steps): 0.3142
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3071 (-0.0071)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3079 (-0.0063)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3088 (-0.0054)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3103 (-0.0039)
+  Prompt 163 ('A triangular orange picture frame. An orange pictu...'):
+    - Original (No Guess - Baseline 20 steps): 0.2583
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2463 (-0.0120)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2485 (-0.0098)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2480 (-0.0103)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2505 (-0.0078)
+  Prompt 164 ('A cube made of brick. A cube with the texture of b...'):
+    - Original (No Guess - Baseline 20 steps): 0.2861
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2803 (-0.0059)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2810 (-0.0051)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2810 (-0.0051)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2817 (-0.0044)
+  Prompt 165 ('An illustration of a large red elephant sitting on...'):
+    - Original (No Guess - Baseline 20 steps): 0.3210
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3086 (-0.0125)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3105 (-0.0105)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3132 (-0.0078)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3152 (-0.0059)
+  Prompt 166 ('A stack of 3 cubes. A red cube is on the top, sitt...'):
+    - Original (No Guess - Baseline 20 steps): 0.2360
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2275 (-0.0084)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2288 (-0.0072)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2258 (-0.0101)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2269 (-0.0090)
+  Prompt 167 ('A fisheye lens view of a turtle sitting in a fores...'):
+    - Original (No Guess - Baseline 20 steps): 0.3289
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3330 (+0.0042)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3325 (+0.0037)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3333 (+0.0044)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3333 (+0.0044)
+  Prompt 168 ('A large motor vehicle carrying passengers by road,...'):
+    - Original (No Guess - Baseline 20 steps): 0.2769
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2529 (-0.0239)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2563 (-0.0205)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2610 (-0.0159)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2649 (-0.0120)
+  Prompt 169 ('A device consisting of a circular canopy of cloth ...'):
+    - Original (No Guess - Baseline 20 steps): 0.2102
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2029 (-0.0073)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2045 (-0.0057)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2050 (-0.0052)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2081 (-0.0021)
+  Prompt 170 ('An instrument used for cutting cloth, paper, and o...'):
+    - Original (No Guess - Baseline 20 steps): 0.1842
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1636 (-0.0206)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1649 (-0.0193)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1707 (-0.0135)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1738 (-0.0104)
+  Prompt 171 ('A domesticated carnivorous mammal that typically h...'):
+    - Original (No Guess - Baseline 20 steps): 0.1891
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1711 (-0.0179)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1740 (-0.0151)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1736 (-0.0155)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1740 (-0.0151)
+  Prompt 172 ('A type of digital currency in which a record of tr...'):
+    - Original (No Guess - Baseline 20 steps): 0.1649
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1584 (-0.0065)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1610 (-0.0039)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1641 (-0.0009)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1628 (-0.0021)
+  Prompt 173 ('An oil painting of a couple in formal evening wear...'):
+    - Original (No Guess - Baseline 20 steps): 0.3306
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3298 (-0.0007)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3298 (-0.0007)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3315 (+0.0010)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3315 (+0.0010)
+  Prompt 174 ('A tomato has been put on top of a pumpkin on a kit...'):
+    - Original (No Guess - Baseline 20 steps): 0.2954
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2734 (-0.0220)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2754 (-0.0200)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2734 (-0.0220)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2771 (-0.0183)
+  Prompt 175 ('Abraham Lincoln touches his toes while George Wash...'):
+    - Original (No Guess - Baseline 20 steps): 0.2861
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2527 (-0.0334)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2585 (-0.0276)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2693 (-0.0168)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2727 (-0.0134)
+  Prompt 176 ('Dininrg tablez....'):
+    - Original (No Guess - Baseline 20 steps): 0.1835
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1864 (+0.0029)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1881 (+0.0046)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1857 (+0.0022)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1853 (+0.0018)
+  Prompt 177 ('An instqrumemnt used for cutting cloth, paper, axd...'):
+    - Original (No Guess - Baseline 20 steps): 0.1760
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1627 (-0.0133)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1641 (-0.0120)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1656 (-0.0104)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1682 (-0.0078)
+  Prompt 178 ('A wine glass on top of a dog....'):
+    - Original (No Guess - Baseline 20 steps): 0.3096
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2834 (-0.0261)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2896 (-0.0200)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2876 (-0.0220)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2900 (-0.0195)
+  Prompt 179 ('A giraffe underneath a microwave....'):
+    - Original (No Guess - Baseline 20 steps): 0.2922
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2668 (-0.0254)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2712 (-0.0210)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2727 (-0.0195)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2776 (-0.0146)
+  Prompt 180 ('A zebra underneath a broccoli....'):
+    - Original (No Guess - Baseline 20 steps): 0.3662
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3562 (-0.0100)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3589 (-0.0073)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3601 (-0.0061)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3618 (-0.0044)
+  Prompt 181 ('A cat on the left of a dog....'):
+    - Original (No Guess - Baseline 20 steps): 0.3047
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2908 (-0.0139)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2942 (-0.0105)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2915 (-0.0132)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2964 (-0.0083)
+  Prompt 182 ('A stop sign on the right of a refrigerator....'):
+    - Original (No Guess - Baseline 20 steps): 0.2891
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2363 (-0.0527)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2429 (-0.0461)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2485 (-0.0405)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2559 (-0.0332)
+  Prompt 183 ('Jentacular....'):
+    - Original (No Guess - Baseline 20 steps): 0.1829
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1831 (+0.0002)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1844 (+0.0016)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1824 (-0.0005)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1835 (+0.0006)
+  Prompt 184 ('Backlotter....'):
+    - Original (No Guess - Baseline 20 steps): 0.1721
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.1758 (+0.0037)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.1737 (+0.0016)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.1763 (+0.0042)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.1758 (+0.0037)
+  Prompt 185 ('A baby fennec sneezing onto a strawberry, detailed...'):
+    - Original (No Guess - Baseline 20 steps): 0.3311
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3318 (+0.0007)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3328 (+0.0017)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3330 (+0.0020)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3352 (+0.0042)
+  Prompt 186 ('A tiger in a lab coat with a 1980s Miami vibe, tur...'):
+    - Original (No Guess - Baseline 20 steps): 0.3381
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.3335 (-0.0046)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.3337 (-0.0044)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3359 (-0.0022)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3362 (-0.0020)
+  Prompt 187 ('A medieval painting of the wifi not working....'):
+    - Original (No Guess - Baseline 20 steps): 0.2128
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2158 (+0.0031)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2120 (-0.0007)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2194 (+0.0066)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2196 (+0.0068)
+  Prompt 188 ('Photo of an athlete cat explaining it's latest sca...'):
+    - Original (No Guess - Baseline 20 steps): 0.3027
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2798 (-0.0229)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2866 (-0.0161)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2844 (-0.0183)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2903 (-0.0125)
+  Prompt 189 ('A painting by Grant Wood of an astronaut couple, a...'):
+    - Original (No Guess - Baseline 20 steps): 0.2864
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2876 (+0.0012)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2905 (+0.0042)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2957 (+0.0093)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2976 (+0.0112)
+  Prompt 190 ('Hyper-realistic photo of an abandoned industrial s...'):
+    - Original (No Guess - Baseline 20 steps): 0.2693
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2778 (+0.0085)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2756 (+0.0063)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2795 (+0.0103)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2791 (+0.0098)
+  Prompt 191 ('Photo of a mega Lego space station inside a kid's ...'):
+    - Original (No Guess - Baseline 20 steps): 0.2908
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2842 (-0.0066)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2854 (-0.0054)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2893 (-0.0015)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2917 (+0.0010)
+  Prompt 192 ('A maglev train going vertically downward in high s...'):
+    - Original (No Guess - Baseline 20 steps): 0.2163
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2181 (+0.0018)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2194 (+0.0031)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2223 (+0.0060)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2213 (+0.0050)
+  Prompt 193 ('A 1960s poster warning against climate change....'):
+    - Original (No Guess - Baseline 20 steps): 0.2277
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2170 (-0.0106)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2189 (-0.0088)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2195 (-0.0082)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2205 (-0.0072)
+  Prompt 194 ('A storefront with 'Hello World' written on it....'):
+    - Original (No Guess - Baseline 20 steps): 0.2693
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2440 (-0.0253)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2465 (-0.0228)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2451 (-0.0242)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2474 (-0.0219)
+  Prompt 195 ('A storefront with 'Deep Learning' written on it....'):
+    - Original (No Guess - Baseline 20 steps): 0.3135
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2991 (-0.0144)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2998 (-0.0137)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.3052 (-0.0083)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.3020 (-0.0115)
+  Prompt 196 ('A sign that says 'Diffusion'....'):
+    - Original (No Guess - Baseline 20 steps): 0.2483
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2312 (-0.0171)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2351 (-0.0132)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2339 (-0.0144)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2380 (-0.0103)
+  Prompt 197 ('A sign that says 'Google Brain Toronto'....'):
+    - Original (No Guess - Baseline 20 steps): 0.2979
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2566 (-0.0413)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2581 (-0.0398)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2734 (-0.0244)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2771 (-0.0208)
+  Prompt 198 ('New York Skyline with 'Text to Image' written with...'):
+    - Original (No Guess - Baseline 20 steps): 0.2976
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2886 (-0.0090)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2915 (-0.0061)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2937 (-0.0039)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2954 (-0.0022)
+  Prompt 199 ('New York Skyline with 'Google Research Pizza Cafe'...'):
+    - Original (No Guess - Baseline 20 steps): 0.3083
+    - MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group): 0.2849 (-0.0234)
+    - AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp: 0.2864 (-0.0220)
+    - AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp: 0.2964 (-0.0120)
+    - AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp: 0.2976 (-0.0107)
+
+================================================================================
+Statistics saved to: ./test_results_comparison_rl_embeddings_drawbench_ab2_combo/comparison_stats.txt
+You can now visually compare the results in the following directories:
+  - ./test_results_comparison_rl_embeddings_drawbench_ab2_combo/original
+  - ./test_results_comparison_rl_embeddings_drawbench_ab2_combo/ab2
+  - ./test_results_comparison_rl_embeddings_drawbench_ab2_combo/ab2_abl_ef04
+  - ./test_results_comparison_rl_embeddings_drawbench_ab2_combo/ab2_abl_strong
+  - ./test_results_comparison_rl_embeddings_drawbench_ab2_combo/ab2_abl_ef04_strong
+================================================================================
+
+OK: wrote ./test_results_comparison_rl_embeddings_drawbench_ab2_combo/comparison_stats.txt
+================================================================================
+COMPARISON STATISTICS
+================================================================================
+
+Total prompts: 200
+Generations per prompt: 12
+Total samples: 2400
+Random seed: 42 (fixed for each rollout)
+
+Original (No Guess - Baseline 20 steps):
+  HPSv2 Reward Mean: 0.2661
+  HPSv2 Reward Std:  0.0581
+
+MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group):
+  HPSv2 Reward Mean: 0.2524
+  HPSv2 Reward Std:  0.0591
+  vs Baseline: -0.0137 (-5.14%)
+
+AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp:
+  HPSv2 Reward Mean: 0.2544
+  HPSv2 Reward Std:  0.0592
+  vs Baseline: -0.0117 (-4.40%)
+
+AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp:
+  HPSv2 Reward Mean: 0.2561
+  HPSv2 Reward Std:  0.0587
+  vs Baseline: -0.0100 (-3.76%)
+
+AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp:
+  HPSv2 Reward Mean: 0.2581
+  HPSv2 Reward Std:  0.0588
+  vs Baseline: -0.0081 (-3.03%)
+
