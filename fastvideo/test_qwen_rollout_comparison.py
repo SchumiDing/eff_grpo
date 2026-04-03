@@ -9,7 +9,11 @@
 7. MTA D2: 二阶轨迹预测 + 动态动量 + 防过冲加速度耦合 (train_grpo_qwenimage_eff_mta_d2)
 8. MTA Alpha: 一阶 v_hat = alpha*v_prev + (1-alpha)*v_group，alpha 由速度一致性 (train_grpo_qwenimage_eff_mta_alpha)
 9. MTA AB2: 二阶外推 1.5*v_prev - 0.5*v_prevprev 再与 v_group 融合 (train_grpo_qwenimage_eff_mta_ab2)
-10. MTA VarGuess: 组内速度方差自适应 guess 数量，预测仍为 auto 动量 (train_grpo_qwenimage_eff_mta_varguess)
+10. MTA AB2-2: AB2 + 更长前半融合 + alpha^p 略增 v_group (train_grpo_qwenimage_eff_mta_ab2_2)
+11. MTA VarGuess: 组内速度方差自适应 guess 数量，预测仍为 auto 动量 (train_grpo_qwenimage_eff_mta_varguess)
+12. MTA ResAB: v_tgt + cos 加权 AB2 加速度项 (train_grpo_qwenimage_eff_mta_resab)
+13. MTA Line: v_tgt + cos 加权 (v_prev - v_prevprev) (train_grpo_qwenimage_eff_mta_line)
+14. MTA Heun: 前半段 0.5*(v_so + v_tgt) (train_grpo_qwenimage_eff_mta_heun)
 """
 
 import torch
@@ -41,7 +45,18 @@ from train_grpo_qwenimage_eff_mta_auto import sample_reference_model as sample_r
 from train_grpo_qwenimage_eff_mta_d2 import sample_reference_model as sample_reference_model_d2
 from train_grpo_qwenimage_eff_mta_alpha import sample_reference_model as sample_reference_model_alpha
 from train_grpo_qwenimage_eff_mta_ab2 import sample_reference_model as sample_reference_model_ab2
+from train_grpo_qwenimage_eff_mta_ab2_2 import sample_reference_model as sample_reference_model_ab2_2
+from train_grpo_qwenimage_eff_mta_ab2_ablate import (
+    sample_reference_model_ab2_abl_ef04,
+    sample_reference_model_ab2_abl_ef06,
+    sample_reference_model_ab2_abl_v1,
+    sample_reference_model_ab2_abl_strong,
+    sample_reference_model_ab2_abl_ef04_strong,
+)
 from train_grpo_qwenimage_eff_mta_varguess import sample_reference_model as sample_reference_model_varguess
+from train_grpo_qwenimage_eff_mta_resab import sample_reference_model as sample_reference_model_resab
+from train_grpo_qwenimage_eff_mta_line import sample_reference_model as sample_reference_model_line
+from train_grpo_qwenimage_eff_mta_heun import sample_reference_model as sample_reference_model_heun
 from train_grpo_qwenimage_eff_oneach import run_sample_step as run_sample_step_oneach, flux_step, unpack_latents, pack_latents
 
 def set_seed(seed):
@@ -95,8 +110,8 @@ def test_comparison():
     parser.add_argument("--end_idx", type=int, default=None, help="End index of embeddings to load (None means all)")
     parser.add_argument("--batch_size", type=int, default=10, help="Number of prompts per batch")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
-    parser.add_argument("--methods", type=str, nargs='+', default=["original", "original_14", "reuse", "auto", "d2", "alpha", "ab2", "varguess"], 
-                        help="Methods to run: original, original_14, mean_direction, noise, momentum, reuse, auto, d2, alpha, ab2, varguess, oneach_14")
+    parser.add_argument("--methods", type=str, nargs='+', default=["original", "original_14", "reuse", "auto", "d2", "alpha", "ab2", "ab2_2", "resab", "line", "heun"], 
+                        help="Methods to run: ... ab2, ab2_2, ab2_abl_ef04, ab2_abl_ef06, ab2_abl_v1, ab2_abl_strong, varguess, ...")
     parser.add_argument("--fsdp_sharding_strategy", type=str, default="SHARD_GRAD_OP", help="FSDP sharding strategy")
     args = parser.parse_args()
 
@@ -133,7 +148,29 @@ def test_comparison():
         args.output_path = f"./test_results_comparison_{args.embeddings_path.split('/')[-1]}"
     
     # 检查哪些方法已经生成过，跳过已有的方法
-    available_methods = ["original", "original_14", "mean_direction", "noise", "momentum", "reuse", "auto", "d2", "alpha", "ab2", "varguess", "oneach_14"]
+    available_methods = [
+        "original",
+        "original_14",
+        "mean_direction",
+        "noise",
+        "momentum",
+        "reuse",
+        "auto",
+        "d2",
+        "alpha",
+        "ab2",
+        "ab2_2",
+        "ab2_abl_ef04",
+        "ab2_abl_ef06",
+        "ab2_abl_v1",
+        "ab2_abl_strong",
+        "ab2_abl_ef04_strong",
+        "varguess",
+        "resab",
+        "line",
+        "heun",
+        "oneach_14",
+    ]
     methods_to_run = []
     for method in args.methods:
         if method not in available_methods:
@@ -533,6 +570,45 @@ def test_comparison():
             if os.path.isfile(src):
                 shutil.move(src, dst)
 
+    def move_ab2_2_batch_to_output(
+        start_prompt_idx: int, batch_num_prompts: int, mock_flag_sums
+    ) -> None:
+        g = args.num_generations
+        n = batch_num_prompts * g
+        for local_idx in range(n):
+            prompt_idx = start_prompt_idx + local_idx // g
+            gen_idx = local_idx % g
+            guess_count = int(mock_flag_sums[local_idx])
+            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png")
+            prompt_dir = os.path.join(args.output_path, "ab2_2", f"prompt_{prompt_idx}")
+            os.makedirs(prompt_dir, exist_ok=True)
+            dst = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}.png")
+            if os.path.isfile(src):
+                shutil.move(src, dst)
+
+    def _move_ab2_ablate_batch_to_output(subdir: str):
+        def _fn(start_prompt_idx: int, batch_num_prompts: int, mock_flag_sums) -> None:
+            g = args.num_generations
+            n = batch_num_prompts * g
+            for local_idx in range(n):
+                prompt_idx = start_prompt_idx + local_idx // g
+                gen_idx = local_idx % g
+                guess_count = int(mock_flag_sums[local_idx])
+                src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png")
+                prompt_dir = os.path.join(args.output_path, subdir, f"prompt_{prompt_idx}")
+                os.makedirs(prompt_dir, exist_ok=True)
+                dst = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}.png")
+                if os.path.isfile(src):
+                    shutil.move(src, dst)
+
+        return _fn
+
+    move_ab2_abl_ef04_batch_to_output = _move_ab2_ablate_batch_to_output("ab2_abl_ef04")
+    move_ab2_abl_ef06_batch_to_output = _move_ab2_ablate_batch_to_output("ab2_abl_ef06")
+    move_ab2_abl_v1_batch_to_output = _move_ab2_ablate_batch_to_output("ab2_abl_v1")
+    move_ab2_abl_strong_batch_to_output = _move_ab2_ablate_batch_to_output("ab2_abl_strong")
+    move_ab2_abl_ef04_strong_batch_to_output = _move_ab2_ablate_batch_to_output("ab2_abl_ef04_strong")
+
     def move_varguess_batch_to_output(
         start_prompt_idx: int, batch_num_prompts: int, mock_flag_sums
     ) -> None:
@@ -544,6 +620,54 @@ def test_comparison():
             guess_count = int(mock_flag_sums[local_idx])
             src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png")
             prompt_dir = os.path.join(args.output_path, "varguess", f"prompt_{prompt_idx}")
+            os.makedirs(prompt_dir, exist_ok=True)
+            dst = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}.png")
+            if os.path.isfile(src):
+                shutil.move(src, dst)
+
+    def move_resab_batch_to_output(
+        start_prompt_idx: int, batch_num_prompts: int, mock_flag_sums
+    ) -> None:
+        g = args.num_generations
+        n = batch_num_prompts * g
+        for local_idx in range(n):
+            prompt_idx = start_prompt_idx + local_idx // g
+            gen_idx = local_idx % g
+            guess_count = int(mock_flag_sums[local_idx])
+            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png")
+            prompt_dir = os.path.join(args.output_path, "resab", f"prompt_{prompt_idx}")
+            os.makedirs(prompt_dir, exist_ok=True)
+            dst = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}.png")
+            if os.path.isfile(src):
+                shutil.move(src, dst)
+
+    def move_line_batch_to_output(
+        start_prompt_idx: int, batch_num_prompts: int, mock_flag_sums
+    ) -> None:
+        g = args.num_generations
+        n = batch_num_prompts * g
+        for local_idx in range(n):
+            prompt_idx = start_prompt_idx + local_idx // g
+            gen_idx = local_idx % g
+            guess_count = int(mock_flag_sums[local_idx])
+            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png")
+            prompt_dir = os.path.join(args.output_path, "line", f"prompt_{prompt_idx}")
+            os.makedirs(prompt_dir, exist_ok=True)
+            dst = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}.png")
+            if os.path.isfile(src):
+                shutil.move(src, dst)
+
+    def move_heun_batch_to_output(
+        start_prompt_idx: int, batch_num_prompts: int, mock_flag_sums
+    ) -> None:
+        g = args.num_generations
+        n = batch_num_prompts * g
+        for local_idx in range(n):
+            prompt_idx = start_prompt_idx + local_idx // g
+            gen_idx = local_idx % g
+            guess_count = int(mock_flag_sums[local_idx])
+            src = rollout_image_file(f"qwenimage_{current_rank}_{local_idx}_guess{guess_count}.png")
+            prompt_dir = os.path.join(args.output_path, "heun", f"prompt_{prompt_idx}")
             os.makedirs(prompt_dir, exist_ok=True)
             dst = os.path.join(prompt_dir, f"gen_{gen_idx}_guess{guess_count}.png")
             if os.path.isfile(src):
@@ -594,7 +718,16 @@ def test_comparison():
         "d2": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
         "alpha": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
         "ab2": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
+        "ab2_2": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
+        "ab2_abl_ef04": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
+        "ab2_abl_ef06": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
+        "ab2_abl_v1": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
+        "ab2_abl_strong": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
+        "ab2_abl_ef04_strong": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
         "varguess": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
+        "resab": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
+        "line": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
+        "heun": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
         "oneach_14": {"rewards": [], "latents": [], "log_probs": [], "txt_seq_lens": []},
     }
     
@@ -617,7 +750,46 @@ def test_comparison():
             "d2": ("METHOD 7: MTA D2 (2nd-order + adaptive momentum)", sample_reference_model_d2, move_d2_batch_to_output, True, args.sampling_steps),
             "alpha": ("METHOD 8: MTA Alpha (consistency-mixed v_prev + v_group)", sample_reference_model_alpha, move_alpha_batch_to_output, True, args.sampling_steps),
             "ab2": ("METHOD 9: MTA AB2 (2nd-order extrapolation + v_group blend)", sample_reference_model_ab2, move_ab2_batch_to_output, True, args.sampling_steps),
+            "ab2_2": ("METHOD 9b: MTA AB2-2 (early T/2, alpha^0.99 mix)", sample_reference_model_ab2_2, move_ab2_2_batch_to_output, True, args.sampling_steps),
+            "ab2_abl_ef04": (
+                "METHOD 9c: AB2 ablate early_frac=0.4 (c1=1.5,c2=-0.5)",
+                sample_reference_model_ab2_abl_ef04,
+                move_ab2_abl_ef04_batch_to_output,
+                True,
+                args.sampling_steps,
+            ),
+            "ab2_abl_ef06": (
+                "METHOD 9d: AB2 ablate early_frac=0.6 (c1=1.5,c2=-0.5)",
+                sample_reference_model_ab2_abl_ef06,
+                move_ab2_abl_ef06_batch_to_output,
+                True,
+                args.sampling_steps,
+            ),
+            "ab2_abl_v1": (
+                "METHOD 9e: AB2 ablate first-order v_so=v_prev (early=0.5)",
+                sample_reference_model_ab2_abl_v1,
+                move_ab2_abl_v1_batch_to_output,
+                True,
+                args.sampling_steps,
+            ),
+            "ab2_abl_strong": (
+                "METHOD 9f: AB2 ablate strong extrap 2*v_prev-1*v_pp (early=0.5)",
+                sample_reference_model_ab2_abl_strong,
+                move_ab2_abl_strong_batch_to_output,
+                True,
+                args.sampling_steps,
+            ),
+            "ab2_abl_ef04_strong": (
+                "METHOD 9g: AB2 combo early=0.4 + v_so=2*v_prev-1*v_pp",
+                sample_reference_model_ab2_abl_ef04_strong,
+                move_ab2_abl_ef04_strong_batch_to_output,
+                True,
+                args.sampling_steps,
+            ),
             "varguess": ("METHOD 10: MTA VarGuess (variance-adaptive num_guess + auto velocity)", sample_reference_model_varguess, move_varguess_batch_to_output, True, args.sampling_steps),
+            "resab": ("METHOD 11: MTA ResAB (v_tgt + eta*(v_so-v_prev), eta from cosine)", sample_reference_model_resab, move_resab_batch_to_output, True, args.sampling_steps),
+            "line": ("METHOD 12: MTA Line (v_tgt + w*(v_prev-v_pp), w from cosine)", sample_reference_model_line, move_line_batch_to_output, True, args.sampling_steps),
+            "heun": ("METHOD 13: MTA Heun (early: 0.5*(v_so+v_tgt))", sample_reference_model_heun, move_heun_batch_to_output, True, args.sampling_steps),
         }
         
         if method == "oneach_14":
@@ -1129,7 +1301,16 @@ def test_comparison():
             "d2": "MTA D2 (2nd-order trajectory + adaptive momentum + accel coupling)",
             "alpha": "MTA Alpha (cosine alpha * v_prev + (1-alpha) * v_group)",
             "ab2": "MTA AB2 (1.5*v_prev - 0.5*v_prevprev fused with v_group)",
+            "ab2_2": "MTA AB2-2 (early_frac=0.5, v_hat=a^p*v_so+(1-a)*v_group, p=0.99)",
+            "ab2_abl_ef04": "AB2 ablate: early_frac=0.4, v_so=1.5*v_prev-0.5*v_pp",
+            "ab2_abl_ef06": "AB2 ablate: early_frac=0.6, v_so=1.5*v_prev-0.5*v_pp",
+            "ab2_abl_v1": "AB2 ablate: early_frac=0.5, v_so=v_prev (first-order)",
+            "ab2_abl_strong": "AB2 ablate: early_frac=0.5, v_so=2*v_prev-1*v_pp",
+            "ab2_abl_ef04_strong": "AB2 combo: early_frac=0.4, v_so=2*v_prev-1*v_pp",
             "varguess": "MTA VarGuess (adaptive guess count from group var; auto velocity)",
+            "resab": "MTA ResAB (mean-field v_tgt + cosine-weighted AB2 accel)",
+            "line": "MTA Line (v_tgt + cosine-weighted velocity difference)",
+            "heun": "MTA Heun (early: average of AB2 and v_tgt)",
             "oneach_14": "Oneach (14 steps - Full Inference + Mean Correction)"
         }
         
