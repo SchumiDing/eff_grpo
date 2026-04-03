@@ -13523,4 +13523,855 @@ final loss 0.005332945380359888
 Sampling Progress:  90%|█████████ | 18/20 [01:06<00:07,  3.68s/it][A
 Sampling Progress:  95%|█████████▌| 19/20 [01:09<00:03,  3.68s/it][A
 Sampling Progress: 100%|██████████| 20/20 [01:15<00:00,  4.25s/it][A
-                                                                  [A
+                                                                  [Areward 0.350341796875
+ratio tensor([0.9925], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.38741710782051086
+final loss 0.00029131100745871663
+reward 0.34814453125
+ratio tensor([0.9992], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.0411784648895264
+final loss 0.007881349883973598
+reward 0.349853515625
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.5326973795890808
+final loss 0.004034872632473707
+reward 0.351318359375
+ratio tensor([0.9990], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.096856489777565
+final loss 0.0007330277003347874
+reward 0.3544921875
+ratio tensor([0.9988], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.8474655151367188
+final loss -0.006412281189113855
+reward 0.351318359375
+ratio tensor([0.9989], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.096856489777565
+final loss 0.0007329605286940932
+reward 0.35595703125
+ratio tensor([0.9985], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.283306360244751
+final loss -0.0009707494755275548
+reward 0.35888671875
+ratio tensor([0.9978], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 2.1549882888793945
+final loss -0.0016289777122437954
+reward 0.350341796875
+ratio tensor([0.9996], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.38741710782051086
+final loss 0.0029339042957872152
+reward 0.3525390625
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.266344279050827
+final loss -0.002017329214140773
+reward 0.349365234375
+ratio tensor([0.9987], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.6779777407646179
+final loss 0.0005129544879309833
+reward 0.34716796875
+ratio tensor([0.9988], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.331739068031311
+final loss 0.0010076898615807295
+reward 0.32958984375
+ratio tensor([0.9986], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.8697040677070618
+final loss 0.0006579233449883759
+reward 0.343505859375
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.5683139562606812
+final loss -0.011878503486514091
+reward 0.3330078125
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.2708926498889923
+final loss 0.002051773015409708
+reward 0.3359375
+ratio tensor([0.9625], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.24237433075904846
+final loss -0.00017673388356342912
+reward 0.342529296875
+ratio tensor([0.9984], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.397225022315979
+final loss -0.0010568302823230624
+reward 0.338134765625
+ratio tensor([0.9999], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.6273245215415955
+final loss -0.004752166569232941
+reward 0.336669921875
+ratio tensor([0.9981], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.37069106101989746
+final loss -0.0002803003881126642
+reward 0.33203125
+ratio tensor([0.9999], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.44198161363601685
+final loss 0.0033478783443570137
+reward 0.330078125
+ratio tensor([0.9986], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.7841596007347107
+final loss 0.0005932551575824618
+reward 0.336181640625
+ratio tensor([0.9994], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.285146564245224
+final loss -0.0021589400712400675
+reward 0.32275390625
+ratio tensor([0.9981], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -2.0673270225524902
+final loss 0.0015631048008799553
+reward 0.334228515625
+ratio tensor([0.9993], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.057031404227018356
+final loss 0.0004317431303206831
+reward 0.343505859375
+ratio tensor([0.9996], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.3694162964820862
+final loss -0.0027974264230579138
+reward 0.343017578125
+ratio tensor([0.9984], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.23301540315151215
+final loss -0.00017625042528379709
+reward 0.342041015625
+ratio tensor([0.9994], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.03978636488318443
+final loss 0.0003012229281011969
+reward 0.34814453125
+ratio tensor([0.9977], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.6652246713638306
+final loss -0.0012586696539074183
+reward 0.344482421875
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.6422180533409119
+final loss -0.004863790236413479
+reward 0.34326171875
+ratio tensor([0.9981], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.30121585726737976
+final loss -0.002277578227221966
+reward 0.340087890625
+ratio tensor([0.9991], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.5853899121284485
+final loss 0.0044309766963124275
+reward 0.33935546875
+ratio tensor([0.9804], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.7899911999702454
+final loss 0.000586723443120718
+reward 0.341796875
+ratio tensor([0.9981], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.10798680782318115
+final loss 0.0008165673352777958
+reward 0.333984375
+ratio tensor([0.9990], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -2.290400981903076
+final loss 0.017333852127194405
+reward 0.345947265625
+ratio tensor([0.9991], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.0514206886291504
+final loss -0.007958398200571537
+reward 0.340576171875
+ratio tensor([0.9960], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.44898903369903564
+final loss 0.00033878738759085536
+reward 0.395751953125
+ratio tensor([0.9996], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.0511940717697144
+final loss -0.00796026736497879
+reward 0.393310546875
+ratio tensor([0.9994], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.6768805980682373
+final loss -0.00512455590069294
+reward 0.393310546875
+ratio tensor([0.9937], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.6768805980682373
+final loss -0.0005095824017189443
+reward 0.383056640625
+ratio tensor([0.9984], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.8952361941337585
+final loss 0.0006771442131139338
+reward 0.381103515625
+ratio tensor([0.9999], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.194687008857727
+final loss 0.00904962606728077
+reward 0.389892578125
+ratio tensor([0.9819], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.15284164249897003
+final loss -0.00011369491403456777
+reward 0.39013671875
+ratio tensor([0.9999], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.1902730017900467
+final loss -0.0014413881581276655
+reward 0.380126953125
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.3444124460220337
+final loss 0.010183061473071575
+reward 0.397705078125
+ratio tensor([0.9887], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.3506449460983276
+final loss -0.0010116957128047943
+reward 0.3837890625
+ratio tensor([0.9995], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.7829421758651733
+final loss 0.005928336642682552
+reward 0.382080078125
+ratio tensor([0.9993], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.0449615716934204
+final loss 0.007911091670393944
+reward 0.396484375
+ratio tensor([0.9892], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.1634881496429443
+final loss -0.0008719239849597216
+reward 0.263671875
+ratio tensor([0.9969], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.7785048484802246
+final loss -0.0005879694945178926
+reward 0.261962890625
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.6186159253120422
+final loss -0.004685100167989731
+reward 0.260009765625
+ratio tensor([0.9980], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.4358857572078705
+final loss -0.003295694477856159
+reward 0.273193359375
+ratio tensor([0.9995], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.6693143844604492
+final loss -0.01264022383838892
+reward 0.2491455078125
+ratio tensor([0.9816], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.5805508494377136
+final loss 0.00043170698336325586
+reward 0.2462158203125
+ratio tensor([0.9986], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.8546460866928101
+final loss 0.006465821526944637
+reward 0.2373046875
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.6883525848388672
+final loss 0.01278636883944273
+reward 0.266845703125
+ratio tensor([0.9980], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.0754413604736328
+final loss -0.0008130981586873531
+reward 0.2486572265625
+ratio tensor([0.9980], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.6262333989143372
+final loss 0.00047345380880869925
+reward 0.2423095703125
+ratio tensor([0.9995], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.2201064825057983
+final loss 0.009238692931830883
+reward 0.2578125
+ratio tensor([0.9996], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.23031429946422577
+final loss -0.001744154724292457
+reward 0.257080078125
+ratio tensor([0.9059], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.16179049015045166
+final loss -0.00011103771248599514
+reward 0.35009765625
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -2.100836753845215
+final loss 0.015911264345049858
+reward 0.364990234375
+ratio tensor([0.9995], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.6800152063369751
+final loss -0.00514898169785738
+reward 0.360107421875
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.23173950612545013
+final loss 0.001755099161528051
+reward 0.365234375
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.725602924823761
+final loss -0.005495576653629541
+reward 0.359619140625
+ratio tensor([0.9992], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.3229149878025055
+final loss 0.0024444053415209055
+reward 0.3681640625
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.272655725479126
+final loss -0.009638762101531029
+reward 0.354248046875
+ratio tensor([0.9985], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.3258451223373413
+final loss 0.0010029432596638799
+reward 0.35693359375
+ratio tensor([0.9994], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.824380099773407
+final loss 0.0062418002635240555
+reward 0.36572265625
+ratio tensor([0.9990], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.8167784214019775
+final loss -0.006181768607348204
+reward 0.36474609375
+ratio tensor([0.9996], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.6344274878501892
+final loss -0.004804380238056183
+reward 0.3642578125
+ratio tensor([0.9988], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.5432519912719727
+final loss -0.00041107600554823875
+reward 0.362060546875
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.13296237587928772
+final loss -0.0010070825228467584
+reward 0.299072265625
+ratio tensor([0.9638], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.4987964332103729
+final loss 0.0003641926741693169
+reward 0.313720703125
+ratio tensor([0.9996], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.3814736604690552
+final loss -0.010461593978106976
+reward 0.2958984375
+ratio tensor([0.9996], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.9061883091926575
+final loss 0.006862586829811335
+reward 0.308349609375
+ratio tensor([0.9638], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.6920413374900818
+final loss -0.00050529302097857
+reward 0.303466796875
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.0652846097946167
+final loss -0.0004944232059642673
+reward 0.30908203125
+ratio tensor([0.9996], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.786054790019989
+final loss -0.005952285602688789
+reward 0.31005859375
+ratio tensor([0.9982], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.9114061594009399
+final loss -0.0006892113015055656
+reward 0.31103515625
+ratio tensor([0.9991], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.036757469177246
+final loss -0.007847093977034092
+reward 0.293212890625
+ratio tensor([0.9993], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.2509044408798218
+final loss 0.00946946069598198
+reward 0.295166015625
+ratio tensor([0.9986], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.0002018213272095
+final loss 0.0007567006978206336
+reward 0.305419921875
+ratio tensor([0.9994], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.3159872889518738
+final loss -0.002392372116446495
+reward 0.291015625
+ratio tensor([0.9992], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.5329450368881226
+final loss 0.011604436673223972
+reward 0.416015625
+ratio tensor([0.9994], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.6535991430282593
+final loss 0.004948541522026062
+reward 0.41650390625
+ratio tensor([0.9646], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.43871867656707764
+final loss 0.0003205839602742344
+reward 0.420654296875
+ratio tensor([0.9974], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.3877654075622559
+final loss -0.0010486373212188482
+reward 0.4130859375
+ratio tensor([0.9994], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.9428820610046387
+final loss 0.014710650779306889
+reward 0.416748046875
+ratio tensor([0.9999], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.3312784433364868
+final loss 0.0025093243457376957
+reward 0.41796875
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.20592275261878967
+final loss -0.0015595551813021302
+reward 0.417724609375
+ratio tensor([0.9995], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.09848251193761826
+final loss -0.0007457027095369995
+reward 0.41552734375
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.8684796094894409
+final loss 0.006577364169061184
+reward 0.416259765625
+ratio tensor([0.9996], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.5461589097976685
+final loss 0.004135864321142435
+reward 0.419921875
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.0654447078704834
+final loss -0.008069626986980438
+reward 0.420654296875
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.3877654075622559
+final loss -0.010510275140404701
+reward 0.4189453125
+ratio tensor([0.9995], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.6356837153434753
+final loss -0.004813273437321186
+Steps:   2%|▏         | 33/2000 [6:50:51<395:59:37, 724.75s/it, loss=-0.0799, reward=0.3296, step_time=716.46s, grad_norm=0.00796]Steps:   2%|▏         | 34/2000 [6:50:51<394:26:04, 722.26s/it, loss=-0.0799, reward=0.3296, step_time=716.46s, grad_norm=0.00796]
+Sampling Progress:   0%|          | 0/20 [00:00<?, ?it/s][A
+Sampling Progress:   5%|▌         | 1/20 [00:03<01:09,  3.66s/it][A
+Sampling Progress:  10%|█         | 2/20 [00:07<01:05,  3.66s/it][A
+Sampling Progress:  15%|█▌        | 3/20 [00:10<01:02,  3.66s/it][A
+Sampling Progress:  20%|██        | 4/20 [00:14<00:58,  3.67s/it][A
+Sampling Progress:  25%|██▌       | 5/20 [00:18<00:55,  3.67s/it][A
+Sampling Progress:  30%|███       | 6/20 [00:22<00:51,  3.67s/it][A
+Sampling Progress:  35%|███▌      | 7/20 [00:25<00:47,  3.67s/it][A
+Sampling Progress:  40%|████      | 8/20 [00:29<00:44,  3.68s/it][A
+Sampling Progress:  45%|████▌     | 9/20 [00:33<00:40,  3.68s/it][A
+Sampling Progress:  50%|█████     | 10/20 [00:36<00:36,  3.68s/it][A
+Sampling Progress:  55%|█████▌    | 11/20 [00:40<00:33,  3.68s/it][A
+Sampling Progress:  60%|██████    | 12/20 [00:44<00:29,  3.68s/it][A
+Sampling Progress:  65%|██████▌   | 13/20 [00:47<00:25,  3.68s/it][A
+Sampling Progress:  70%|███████   | 14/20 [00:51<00:22,  3.68s/it][A
+Sampling Progress:  75%|███████▌  | 15/20 [00:55<00:18,  3.68s/it][A
+Sampling Progress:  80%|████████  | 16/20 [00:58<00:14,  3.68s/it][A
+Sampling Progress:  85%|████████▌ | 17/20 [01:02<00:11,  3.68s/it][A
+Sampling Progress:  90%|█████████ | 18/20 [01:06<00:07,  3.68s/it][A
+Sampling Progress:  95%|█████████▌| 19/20 [01:09<00:03,  3.69s/it][A
+Sampling Progress: 100%|██████████| 20/20 [01:15<00:00,  4.26s/it][A
+                                                                  [Areward 0.316650390625
+ratio tensor([0.9992], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.1890331506729126
+final loss -0.001430870033800602
+reward 0.316162109375
+ratio tensor([0.9993], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.1260221004486084
+final loss -0.0009540885221213102
+reward 0.306396484375
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.1341989040374756
+final loss 0.00859046820551157
+reward 0.30615234375
+ratio tensor([0.9987], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.165704369544983
+final loss 0.0008819604408927262
+reward 0.32568359375
+ratio tensor([0.9992], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.3547375202178955
+final loss -0.010255100205540657
+reward 0.32861328125
+ratio tensor([0.9996], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.7328038215637207
+final loss -0.013121429830789566
+reward 0.3037109375
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.480759620666504
+final loss 0.011215616948902607
+reward 0.314208984375
+ratio tensor([0.9983], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.1260221004486084
+final loss 9.53086419031024e-05
+reward 0.3173828125
+ratio tensor([0.9891], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.2835497260093689
+final loss -0.00021247012773528695
+reward 0.31494140625
+ratio tensor([0.9991], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.0315055251121521
+final loss 0.00023847489501349628
+reward 0.310302734375
+ratio tensor([0.9965], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.630110502243042
+final loss 0.0004756821144837886
+reward 0.322021484375
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.8821547031402588
+final loss -0.0066818734630942345
+reward 0.289306640625
+ratio tensor([0.9989], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.5444344878196716
+final loss -0.00041201154817827046
+reward 0.286865234375
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.5266013145446777
+final loss 0.003988793585449457
+reward 0.2861328125
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.847912073135376
+final loss 0.006421392783522606
+reward 0.2900390625
+ratio tensor([0.9996], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.8657452464103699
+final loss -0.006555981934070587
+reward 0.288330078125
+ratio tensor([0.9727], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.11602016538381577
+final loss -8.549872291041538e-05
+reward 0.2880859375
+ratio tensor([0.9999], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.00891658291220665
+final loss -6.754031346645206e-05
+reward 0.291259765625
+ratio tensor([0.9992], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.4012631177902222
+final loss -0.010607430711388588
+reward 0.28955078125
+ratio tensor([0.9736], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.651538074016571
+final loss -0.00048055805382318795
+reward 0.284423828125
+ratio tensor([0.9999], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.5976371765136719
+final loss 0.012101897969841957
+reward 0.28564453125
+ratio tensor([0.9994], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.0621192455291748
+final loss 0.008041134104132652
+reward 0.285888671875
+ratio tensor([0.9996], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.9550156593322754
+final loss 0.007231736555695534
+reward 0.291259765625
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.4012631177902222
+final loss -0.010612624697387218
+reward 0.3115234375
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.2806923389434814
+final loss -0.009699536487460136
+reward 0.309326171875
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.3883361518383026
+final loss -0.002940949285402894
+reward 0.303955078125
+ratio tensor([0.9981], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.7929788827896118
+final loss 0.0013557065976783633
+reward 0.30810546875
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.1074172779917717
+final loss 0.00081350450636819
+reward 0.30810546875
+ratio tensor([0.9991], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.1074172779917717
+final loss 0.000813008809927851
+reward 0.31005859375
+ratio tensor([0.9984], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.6857882142066956
+final loss -0.0005187260685488582
+reward 0.31201171875
+ratio tensor([0.9995], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.4789936542510986
+final loss -0.011198891326785088
+reward 0.307861328125
+ratio tensor([0.9993], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.20656795799732208
+final loss 0.0015637384494766593
+reward 0.310791015625
+ratio tensor([0.9887], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.9832402467727661
+final loss -0.0007364714983850718
+reward 0.306640625
+ratio tensor([0.9961], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.7023214101791382
+final loss 0.0005299773183651268
+reward 0.305908203125
+ratio tensor([0.9996], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.9997734427452087
+final loss 0.007571366615593433
+reward 0.30615234375
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.9006227850914001
+final loss 0.006821277551352978
+reward 0.27880859375
+ratio tensor([0.9990], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.7688541412353516
+final loss -0.005818682257086039
+reward 0.265625
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.3245052099227905
+final loss 0.010031969286501408
+reward 0.275146484375
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.18736542761325836
+final loss -0.0014191577211022377
+reward 0.267822265625
+ratio tensor([1.0000], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.9756119847297668
+final loss 0.007390989921987057
+reward 0.271484375
+ratio tensor([0.9748], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.39412325620651245
+final loss 0.00029105666908435524
+reward 0.263427734375
+ratio tensor([0.9991], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.6733983755111694
+final loss 0.012666438706219196
+reward 0.272705078125
+ratio tensor([0.9986], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.20029370486736298
+final loss 0.00015151816478464752
+reward 0.275146484375
+ratio tensor([0.9993], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.18736542761325836
+final loss -0.0014185054460540414
+reward 0.283935546875
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.582938313484192
+final loss -0.011989216320216656
+reward 0.280029296875
+ratio tensor([0.9986], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.9626836776733398
+final loss -0.0007283142185769975
+reward 0.28076171875
+ratio tensor([0.9050], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.0789813995361328
+final loss -0.0007397613953799009
+reward 0.272705078125
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.20029370486736298
+final loss 0.0015169039834290743
+reward 0.322021484375
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.7343099117279053
+final loss -0.0055618672631680965
+reward 0.32275390625
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.8561314940452576
+final loss -0.0064836908131837845
+reward 0.3046875
+ratio tensor([0.9992], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -2.1488001346588135
+final loss 0.016265736892819405
+reward 0.318603515625
+ratio tensor([0.9977], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.16580936312675476
+final loss -0.00012532476102933288
+reward 0.320068359375
+ratio tensor([0.9996], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.4094524681568146
+final loss -0.003100797301158309
+reward 0.32373046875
+ratio tensor([0.9999], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.0185601711273193
+final loss -0.007715478539466858
+reward 0.31005859375
+ratio tensor([0.9821], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.2554420232772827
+final loss 0.000934048555791378
+reward 0.323974609375
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.0591673851013184
+final loss -0.008022313006222248
+reward 0.3115234375
+ratio tensor([0.9989], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.0117989778518677
+final loss 0.000765654316637665
+reward 0.318359375
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.12520217895507812
+final loss -0.0009482376626692712
+reward 0.316162109375
+ratio tensor([0.9890], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.2402624785900116
+final loss 0.0001800127502065152
+reward 0.3193359375
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.28763091564178467
+final loss -0.0021784340497106314
+reward 0.294921875
+ratio tensor([0.9929], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.5252197980880737
+final loss -0.0011472583282738924
+reward 0.285888671875
+ratio tensor([0.9986], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.6246138215065002
+final loss 0.000472533778520301
+reward 0.295654296875
+ratio tensor([0.9992], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.6995306015014648
+final loss -0.012864289805293083
+reward 0.287841796875
+ratio tensor([0.9995], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.1597849279642105
+final loss 0.0012099052546545863
+reward 0.287841796875
+ratio tensor([0.9949], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.1597849279642105
+final loss 0.00012043624155921862
+reward 0.287109375
+ratio tensor([0.9995], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.3340957760810852
+final loss 0.0025298018008470535
+reward 0.288330078125
+ratio tensor([0.9993], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.043577708303928375
+final loss 0.0003299091476947069
+reward 0.29296875
+ratio tensor([0.9992], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.0603909492492676
+final loss -0.008026915602385998
+reward 0.283935546875
+ratio tensor([0.9968], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.0894427299499512
+final loss 0.0008227107464335859
+reward 0.281494140625
+ratio tensor([0.9990], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.6704788208007812
+final loss 0.012642549350857735
+reward 0.287109375
+ratio tensor([0.9976], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.3340957760810852
+final loss 0.00025249423924833536
+reward 0.2890625
+ratio tensor([0.9991], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.13073313236236572
+final loss -0.0009895369876176119
+reward 0.365478515625
+ratio tensor([0.9999], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.9786071181297302
+final loss -0.007412630133330822
+reward 0.365966796875
+ratio tensor([0.9987], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.1417083740234375
+final loss -0.0008638210711069405
+reward 0.361572265625
+ratio tensor([0.9991], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.326202392578125
+final loss 0.002469052094966173
+reward 0.364013671875
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.4893035590648651
+final loss -0.0037061679176986217
+reward 0.359130859375
+ratio tensor([0.9996], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.1417083740234375
+final loss 0.008646243251860142
+reward 0.35693359375
+ratio tensor([0.9990], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.8756636381149292
+final loss 0.0014195055700838566
+reward 0.36376953125
+ratio tensor([0.9995], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.40775296092033386
+final loss -0.00308736739680171
+reward 0.361083984375
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.4893035590648651
+final loss 0.003706163028255105
+reward 0.3662109375
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.2232589721679688
+final loss -0.009264563210308552
+reward 0.365234375
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.897056519985199
+final loss -0.006794139742851257
+reward 0.36083984375
+ratio tensor([0.9992], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.5708541870117188
+final loss 0.004321050830185413
+reward 0.3603515625
+ratio tensor([0.9079], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.7339553833007812
+final loss 0.0005048044258728623
+reward 0.30517578125
+ratio tensor([0.9995], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.30493929982185364
+final loss -0.0023089179303497076
+reward 0.303955078125
+ratio tensor([0.9984], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.0921897441148758
+final loss -6.972776463953778e-05
+reward 0.306884765625
+ratio tensor([0.9975], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.6027886867523193
+final loss -0.0004555111809168011
+reward 0.304443359375
+ratio tensor([0.9996], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.17728956043720245
+final loss -0.0013426251243799925
+reward 0.29541015625
+ratio tensor([0.9984], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.3970571756362915
+final loss 0.001056693377904594
+reward 0.30908203125
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.9857378602027893
+final loss -0.007466250564903021
+reward 0.2900390625
+ratio tensor([0.9996], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -2.3331551551818848
+final loss 0.017668571323156357
+reward 0.3046875
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.21983946859836578
+final loss -0.0016650239704176784
+reward 0.304931640625
+ratio tensor([0.9992], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.2623893916606903
+final loss -0.001986186020076275
+reward 0.31103515625
+ratio tensor([0.9995], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.3261371850967407
+final loss -0.010041331872344017
+reward 0.3046875
+ratio tensor([0.9992], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.21983946859836578
+final loss -0.0016641928814351559
+reward 0.30078125
+ratio tensor([0.9991], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.4609591066837311
+final loss 0.003488956717774272
+Steps:   2%|▏         | 34/2000 [7:02:46<394:26:04, 722.26s/it, loss=0.0331, reward=0.3273, step_time=714.97s, grad_norm=0.0139]  Steps:   2%|▏         | 35/2000 [7:02:46<393:02:26, 720.07s/it, loss=0.0331, reward=0.3273, step_time=714.97s, grad_norm=0.0139]
+Sampling Progress:   0%|          | 0/20 [00:00<?, ?it/s][A
+Sampling Progress:   5%|▌         | 1/20 [00:03<01:09,  3.66s/it][A
+Sampling Progress:  10%|█         | 2/20 [00:07<01:05,  3.65s/it][A
+Sampling Progress:  15%|█▌        | 3/20 [00:10<01:02,  3.65s/it][A
+Sampling Progress:  20%|██        | 4/20 [00:14<00:58,  3.66s/it][A
+Sampling Progress:  25%|██▌       | 5/20 [00:18<00:54,  3.65s/it][A
+Sampling Progress:  30%|███       | 6/20 [00:21<00:51,  3.65s/it][A
+Sampling Progress:  35%|███▌      | 7/20 [00:25<00:47,  3.66s/it][A
+Sampling Progress:  40%|████      | 8/20 [00:29<00:43,  3.66s/it][A
+Sampling Progress:  45%|████▌     | 9/20 [00:32<00:40,  3.66s/it][A
+Sampling Progress:  50%|█████     | 10/20 [00:36<00:36,  3.67s/it][A
+Sampling Progress:  55%|█████▌    | 11/20 [00:40<00:33,  3.67s/it][A
+Sampling Progress:  60%|██████    | 12/20 [00:43<00:29,  3.67s/it][A
+Sampling Progress:  65%|██████▌   | 13/20 [00:47<00:25,  3.67s/it][A
+Sampling Progress:  70%|███████   | 14/20 [00:51<00:22,  3.67s/it][A
+Sampling Progress:  75%|███████▌  | 15/20 [00:54<00:18,  3.67s/it][A
+Sampling Progress:  80%|████████  | 16/20 [00:58<00:14,  3.67s/it][A
+Sampling Progress:  85%|████████▌ | 17/20 [01:02<00:11,  3.67s/it][A
+Sampling Progress:  90%|█████████ | 18/20 [01:05<00:07,  3.67s/it][A
+Sampling Progress:  95%|█████████▌| 19/20 [01:09<00:03,  3.67s/it][A
+Sampling Progress: 100%|██████████| 20/20 [01:15<00:00,  4.24s/it][A
+                                                                  [Areward 0.338623046875
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.135567307472229
+final loss 0.008600017987191677
+reward 0.337646484375
+ratio tensor([0.9999], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.3767492771148682
+final loss 0.01042847614735365
+reward 0.34033203125
+ratio tensor([0.9998], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.7134989500045776
+final loss 0.005404261406511068
+reward 0.348876953125
+ratio tensor([0.9999], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.3968428373336792
+final loss -0.010581593960523605
+reward 0.339111328125
+ratio tensor([0.9999], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -1.0149763822555542
+final loss 0.007688446901738644
+reward 0.349853515625
+ratio tensor([0.9982], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 1.6380246877670288
+final loss -0.001238680211827159
+reward 0.344970703125
+ratio tensor([0.9993], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.4321151375770569
+final loss -0.0032714600674808025
+reward 0.346923828125
+ratio tensor([0.9992], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.9144789576530457
+final loss -0.006922220811247826
+reward 0.343994140625
+ratio tensor([0.9997], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.1909332275390625
+final loss -0.0014460938982665539
+reward 0.343994140625
+ratio tensor([0.9992], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.1909332275390625
+final loss -0.0014453503536060452
