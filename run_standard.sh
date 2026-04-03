@@ -7,11 +7,7 @@ export PATH=/usr/local/cuda-12.8/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda-12.8/lib64:$LD_LIBRARY_PATH
 export RANK=0
 export WORLD_SIZE=8
-<<<<<<< HEAD
-mkdir -p data/outputs/standard
-=======
 mkdir -p /dry-data/grpo-standard
->>>>>>> Update
 
 torchrun --nproc_per_node=8 --master_port 19003 \
     fastvideo/train_grpo_qwenimage.py \
