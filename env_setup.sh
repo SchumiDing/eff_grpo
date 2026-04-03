@@ -1,7 +1,8 @@
 #!/bin/bash
-
+export PATH=/usr/local/cuda-12.8/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/cuda-12.8/lib:/usr/local/cuda-12.6/lib64:$LD_LIBRARY_PATH
 # install torch
-pip install torch==2.5.0 torchvision --index-url https://download.pytorch.org/whl/cu121
+pip install torch==2.8.0 torchvision --index-url https://download.pytorch.org/whl/cu128
 
 # install FA2 and diffusers
 pip install packaging ninja && pip install flash-attn==2.7.0.post2 --no-build-isolation 

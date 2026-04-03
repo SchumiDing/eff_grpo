@@ -27,6 +27,7 @@ import os
 import sys
 from pathlib import Path
 
+from tqdm import tqdm
 import numpy as np
 import torch
 import torch.distributed as dist
@@ -334,8 +335,10 @@ def _qwen_official_denoise(
         g = None
 
     scheduler.set_begin_index(0)
+    
     with torch.no_grad():
-        for t in timesteps:
+
+        for t in tqdm(timesteps, total=len(timesteps), desc="Sampling"):
             timestep = t.expand(latents.shape[0]).to(latents.dtype)
             # Do not use transformer.cache_context() here: some diffusers/torch combos break
             # ``with cache_context(...)`` (not a stdlib-compatible context manager).

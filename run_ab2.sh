@@ -7,14 +7,10 @@ export PATH=/usr/local/cuda-12.8/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda-12.8/lib64:$LD_LIBRARY_PATH
 export RANK=0
 export WORLD_SIZE=8
-<<<<<<< HEAD
-mkdir -p data/outputs/standard
-=======
-mkdir -p /dry-data/grpo-standard
->>>>>>> Update
+mkdir -p /dry-data/grpo_eff_mta_ab2
 
 torchrun --nproc_per_node=8 --master_port 19003 \
-    fastvideo/train_grpo_qwenimage.py \
+    fastvideo/train_grpo_qwenimage_eff_mta_ab2.py \
     --seed 42 \
     --pretrained_model_name_or_path data/qwenimage \
     --vae_model_path data/qwenimage \
@@ -26,14 +22,14 @@ torchrun --nproc_per_node=8 --master_port 19003 \
     --sp_size 1 \
     --train_sp_batch_size 2 \
     --dataloader_num_workers 4 \
-    --gradient_accumulation_steps 8 \
+    --gradient_accumulation_steps 12 \
     --max_train_steps 2000 \
     --learning_rate 1e-5 \
     --mixed_precision bf16 \
     --checkpointing_steps 25 \
     --allow_tf32 \
     --cfg 0.0 \
-    --output_dir /dry-data/grpo_standard \
+    --output_dir /dry-data/grpo_eff_mta_ab2 \
     --h 720 \
     --w 720 \
     --t 1 \
@@ -44,7 +40,9 @@ torchrun --nproc_per_node=8 --master_port 19003 \
     --max_grad_norm 1.0 \
     --weight_decay 0.0001 \
     --use_hpsv2 \
-    --num_generations 8 \
+    --num_generations 12 \
+    --num_infer 8 \
+    --num_guess 4 \
     --shift 3 \
     --use_group \
     --ignore_last \
@@ -52,8 +50,5 @@ torchrun --nproc_per_node=8 --master_port 19003 \
     --init_same_noise \
     --clip_range 0.1 \
     --adv_clip_max 5.0 \
-<<<<<<< HEAD
-    --selective_checkpointing 0.0
-=======
-    --selective_checkpointing 0.0
->>>>>>> Update
+    --selective_checkpointing 0
+

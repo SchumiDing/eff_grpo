@@ -135,6 +135,7 @@ def main(args):
                 # 4. 填充 prompt_attention_mask
                 # prompt_attention_mask 是一个2D张量 (B, L)，我们同样填充第二个维度 L
                 # 我们在维度1（序列长度L）的右侧进行填充
+                
                 prompt_attention_mask = F.pad(prompt_attention_mask, (0, pad_len), "constant", 0)
 
                 # ==================== 代码修改结束 ====================
