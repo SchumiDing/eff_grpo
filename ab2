@@ -14375,3 +14375,11 @@ reward 0.343994140625
 ratio tensor([0.9992], device='cuda:0', grad_fn=<ExpBackward0>)
 advantage 0.1909332275390625
 final loss -0.0014453503536060452
+reward 0.34033203125
+ratio tensor([0.9980], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage -0.7134989500045776
+final loss 0.0005394700565375388
+reward 0.343994140625
+ratio tensor([0.9967], device='cuda:0', grad_fn=<ExpBackward0>)
+advantage 0.1909332275390625
+final loss -0.0001441716740373522
