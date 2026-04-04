@@ -43,4 +43,4 @@ torchrun --nproc_per_node=8 --master_port 19003 \
     --init_same_noise \
     --clip_range 1e-4 \
     --adv_clip_max 5.0 \
-    --selective_checkpointing 1
+    --selective_checkpointing 0
