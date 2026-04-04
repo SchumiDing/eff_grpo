@@ -15,7 +15,7 @@ export LD_LIBRARY_PATH=/usr/local/cuda-12.8/lib64:$LD_LIBRARY_PATH
 export RANK=0
 export WORLD_SIZE=8
 
-OUT_DIR="${OUT_DIR:-/dry-data/grpo_eff_mta_ab2_ef04_strong}"
+OUT_DIR=/dry-data/grpo_eff_mta_ab2_ef04_strong
 mkdir -p "$OUT_DIR"
 
 torchrun --nproc_per_node=8 --master_port 19004 \
