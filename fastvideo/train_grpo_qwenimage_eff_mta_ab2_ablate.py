@@ -704,6 +704,22 @@ def gather_tensor(tensor):
     dist.all_gather(gathered_tensors, tensor)
     return torch.cat(gathered_tensors, dim=0)
 
+
+def _apply_ab2_abl_preset(preset: str) -> None:
+    """Set rollout knobs for training (must match eval method when preset=ef04_strong)."""
+    global _MTA_AB2_ABL_EARLY_FRAC, _MTA_AB2_ABL_C1, _MTA_AB2_ABL_C2
+    if preset == "ef04_strong":
+        _MTA_AB2_ABL_EARLY_FRAC = 0.4
+        _MTA_AB2_ABL_C1 = 2.0
+        _MTA_AB2_ABL_C2 = -1.0
+    elif preset == "canonical":
+        _MTA_AB2_ABL_EARLY_FRAC = 0.5
+        _MTA_AB2_ABL_C1 = 1.5
+        _MTA_AB2_ABL_C2 = -0.5
+    else:
+        raise ValueError(f"unknown ab2_abl_preset: {preset}")
+
+
 def train_one_step(
     args,
     device,
@@ -852,11 +868,13 @@ def train_one_step(
                 1.0 + clip_range,
             )
             
-            # Apply weight to mock paths (guesses)
-            # mock_flags: 1 for guessed, 0 for inferred.
-            # We give guessed samples a lower weight, e.g., 0.1
-            loss_weight = 1.0 - 0.9 * sample["mock_flags"][:,_]
-            
+            # mock_flags: 1 = timestep used mocked/guessed velocity (no true transformer v at rollout).
+            # Default: downweight guess steps (0.1). With zero_loss_on_guess: exclude them from GRPO loss entirely.
+            if getattr(args, "zero_loss_on_guess", False):
+                loss_weight = 1.0 - sample["mock_flags"][:,_]
+            else:
+                loss_weight = 1.0 - 0.9 * sample["mock_flags"][:,_]
+
             loss = torch.mean(torch.maximum(unclipped_loss, clipped_loss) * loss_weight) / (args.gradient_accumulation_steps * train_timesteps)
 
             loss.backward()
@@ -878,6 +896,12 @@ def train_one_step(
 
 
 def main(args):
+    rollout_dir = os.path.abspath(os.path.expanduser(os.path.normpath(args.rollout_image_dir)))
+    os.makedirs(rollout_dir, exist_ok=True)
+    os.environ["DANCEGRPO_ROLLOUT_IMAGE_DIR"] = rollout_dir
+
+    _apply_ab2_abl_preset(args.ab2_abl_preset)
+
     torch.backends.cuda.matmul.allow_tf32 = True
 
     local_rank = int(os.environ["LOCAL_RANK"])
@@ -887,6 +911,15 @@ def main(args):
     torch.cuda.set_device(local_rank)
     device = torch.cuda.current_device()
     initialize_sequence_parallel_state(args.sp_size)
+
+    if rank == 0:
+        main_print(
+            f"Rollout decode scratch dir (DANCEGRPO_ROLLOUT_IMAGE_DIR): {rollout_dir}"
+        )
+        main_print(
+            f"AB2 ablate preset={args.ab2_abl_preset}: early_frac={_MTA_AB2_ABL_EARLY_FRAC}, "
+            f"c1={_MTA_AB2_ABL_C1}, c2={_MTA_AB2_ABL_C2}; zero_loss_on_guess={getattr(args, 'zero_loss_on_guess', False)}"
+        )
 
     # If passed along, set the training seed now. On GPU...
     if args.seed is not None:
@@ -1199,6 +1232,12 @@ if __name__ == "__main__":
     parser.add_argument("--dit_model_name_or_path", type=str, default=None)
     parser.add_argument("--vae_model_path", type=str, default=None, help="vae model.")
     parser.add_argument("--cache_dir", type=str, default="./cache_dir")
+    parser.add_argument(
+        "--rollout_image_dir",
+        type=str,
+        default="data/outputs/rollout_scratch_train_ab2_ablate",
+        help="Temporary decoded PNG directory during rollout (sets env DANCEGRPO_ROLLOUT_IMAGE_DIR; not shared with train_grpo_qwenimage).",
+    )
 
     # diffusion setting
     parser.add_argument("--ema_decay", type=float, default=0.995)
@@ -1476,10 +1515,20 @@ if __name__ == "__main__":
         default=4,
         help="per prompt: max rollouts to mock-guess each denoising step (within that prompt's group of num_generations)",
     )
-    
-
-
-
+    parser.add_argument(
+        "--ab2_abl_preset",
+        type=str,
+        default="canonical",
+        choices=["canonical", "ef04_strong"],
+        help="Rollout hyperparams for this trainer: canonical matches train_grpo_qwenimage_eff_mta_ab2.py; "
+        "ef04_strong = early_frac 0.4 + v_so=2*v_prev-1*v_pp (same as eval ab2_abl_ef04_strong).",
+    )
+    parser.add_argument(
+        "--zero_loss_on_guess",
+        action="store_true",
+        default=False,
+        help="If set, GRPO PPO loss weight is 0 on timesteps where rollout used guessed/mock velocity (no grad from those steps).",
+    )
 
     args = parser.parse_args()
     main(args)

@@ -671,6 +671,10 @@ def train_one_step(
 
 
 def main(args):
+    rollout_dir = os.path.abspath(os.path.expanduser(os.path.normpath(args.rollout_image_dir)))
+    os.makedirs(rollout_dir, exist_ok=True)
+    os.environ["DANCEGRPO_ROLLOUT_IMAGE_DIR"] = rollout_dir
+
     torch.backends.cuda.matmul.allow_tf32 = True
 
     local_rank = int(os.environ["LOCAL_RANK"])
@@ -690,6 +694,8 @@ def main(args):
     # Handle the repository creation
     if rank <= 0 and args.output_dir is not None:
         os.makedirs(args.output_dir, exist_ok=True)
+    if rank == 0:
+        print(f"Rollout decode scratch dir (DANCEGRPO_ROLLOUT_IMAGE_DIR): {rollout_dir}", flush=True)
 
     # For mixed precision training we cast all non-trainable weigths to half-precision
     # as these weights are only used for inference, keeping weights in full precision is not required
@@ -992,6 +998,12 @@ if __name__ == "__main__":
     parser.add_argument("--dit_model_name_or_path", type=str, default=None)
     parser.add_argument("--vae_model_path", type=str, default=None, help="vae model.")
     parser.add_argument("--cache_dir", type=str, default="./cache_dir")
+    parser.add_argument(
+        "--rollout_image_dir",
+        type=str,
+        default="data/outputs/rollout_scratch_train_grpo_qwenimage",
+        help="Temporary decoded PNG directory during rollout (sets env DANCEGRPO_ROLLOUT_IMAGE_DIR; not shared with other trainers).",
+    )
 
     # diffusion setting
     parser.add_argument("--ema_decay", type=float, default=0.995)
