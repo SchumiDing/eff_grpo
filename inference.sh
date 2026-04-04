@@ -8,7 +8,7 @@ export HF_HUB_OFFLINE=1
 
 export LD_LIBRARY_PATH=/usr/local/cuda-12.8/lib64:$LD_LIBRARY_PATH
 export RANK=0
-CKPT_PTH=/mmu-ssd/standard-up-51
+CKPT_PTH=/mmu-ssd/standard-126
 
 python scripts/infer_qwen_dit_hpsv2_single_gpu.py \
   --dit_checkpoint $CKPT_PTH \
