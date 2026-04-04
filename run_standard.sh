@@ -9,6 +9,9 @@ export RANK=0
 export WORLD_SIZE=8
 mkdir -p /dry-data/grpo-standard
 
+# GRPO「选择性 timestep」: --timestep_fraction（0~1），只对打乱后的前若干去噪步做 PPO 反传；1.0=全程。
+# --selective_checkpointing 是 DiT 块上的激活检查点稀疏度（省显存），与去噪 timestep 无关。
+
 torchrun --nproc_per_node=8 --master_port 19003 \
     fastvideo/train_grpo_qwenimage.py \
     --seed 42 \
@@ -44,7 +47,7 @@ torchrun --nproc_per_node=8 --master_port 19003 \
     --shift 3 \
     --use_group \
     --ignore_last \
-    --timestep_fraction 0.6 \
+    --timestep_fraction 0.67 \
     --init_same_noise \
     --clip_range 0.1 \
     --adv_clip_max 5.0 \
