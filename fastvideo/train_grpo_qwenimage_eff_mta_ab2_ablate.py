@@ -814,84 +814,161 @@ def train_one_step(
         advantages = (samples["rewards"] - gathered_reward.mean())/(gathered_reward.std()+1e-8)
         samples["advantages"] = advantages
 
-    
-    perms = torch.stack(
-        [
-            torch.randperm(len(samples["timesteps"][0]))
-            for _ in range(batch_size)
+    train_timesteps = int(len(samples["timesteps"][0]) * args.timestep_fraction)
+
+    if getattr(args, "zero_loss_on_guess", False):
+        # Shuffle only non-guess (infer) timesteps; skip mock steps in the update loop entirely.
+        T = samples["timesteps"].shape[1]
+        train_entries = []
+        for b in range(batch_size):
+            infer = torch.where(samples["mock_flags"][b] < 0.5)[0]
+            if infer.numel() == 0:
+                infer = torch.arange(T, device=device, dtype=torch.long)
+            order = infer[torch.randperm(infer.numel(), device=device)]
+            k = int(args.timestep_fraction * len(order))
+            sel = order[:k]
+            ol = samples["original_length"]
+            ol_b = ol[b : b + 1] if torch.is_tensor(ol) else ol
+            train_entries.append(
+                {
+                    "latents": samples["latents"][b : b + 1, sel],
+                    "next_latents": samples["next_latents"][b : b + 1, sel],
+                    "timesteps": samples["timesteps"][b : b + 1, sel],
+                    "log_probs": samples["log_probs"][b : b + 1, sel],
+                    "sigma_indices": sel,
+                    "k": k,
+                    "advantages": samples["advantages"][b : b + 1],
+                    "rewards": samples["rewards"][b : b + 1],
+                    "encoder_hidden_states": samples["encoder_hidden_states"][b : b + 1],
+                    "prompt_attention_masks": samples["prompt_attention_masks"][b : b + 1],
+                    "original_length": ol_b,
+                    "txt_seq_lens": samples["txt_seq_lens"][b : b + 1],
+                }
+            )
+        for i, sample in list(enumerate(train_entries)):
+            k_i = sample["k"]
+            for j in range(k_i):
+                clip_range = args.clip_range
+                adv_clip_max = args.adv_clip_max
+                sigma_i = int(sample["sigma_indices"][j].item())
+                new_log_probs = grpo_one_step(
+                    args,
+                    sample["latents"][:, j],
+                    sample["next_latents"][:, j],
+                    sample["encoder_hidden_states"][:, : sample["original_length"]],
+                    sample["prompt_attention_masks"][:, : sample["original_length"]],
+                    sample["txt_seq_lens"],
+                    [[(1, args.h // 8 // 2, args.w // 8 // 2)]],
+                    transformer,
+                    sample["timesteps"][:, j],
+                    sigma_i,
+                    sigma_schedule,
+                )
+
+                advantages = torch.clamp(
+                    sample["advantages"],
+                    -adv_clip_max,
+                    adv_clip_max,
+                )
+
+                ratio = torch.exp(new_log_probs - sample["log_probs"][:, j])
+
+                unclipped_loss = -advantages * ratio
+                clipped_loss = -advantages * torch.clamp(
+                    ratio,
+                    1.0 - clip_range,
+                    1.0 + clip_range,
+                )
+
+                loss = torch.mean(torch.maximum(unclipped_loss, clipped_loss)) / (
+                    args.gradient_accumulation_steps * k_i
+                )
+
+                loss.backward()
+                avg_loss = loss.detach().clone()
+                dist.all_reduce(avg_loss, op=dist.ReduceOp.AVG)
+                total_loss += avg_loss.item()
+            if (i + 1) % args.gradient_accumulation_steps == 0:
+                grad_norm = transformer.clip_grad_norm_(max_grad_norm)
+                optimizer.step()
+                lr_scheduler.step()
+                optimizer.zero_grad()
+            if dist.get_rank() % 8 == 0 and k_i > 0:
+                print("reward", sample["rewards"].item())
+                print("ratio", ratio)
+                print("advantage", sample["advantages"].item())
+                print("final loss", loss.item())
+            dist.barrier()
+    else:
+        perms = torch.stack(
+            [
+                torch.randperm(len(samples["timesteps"][0]))
+                for _ in range(batch_size)
+            ]
+        ).to(device)
+        for key in ["timesteps", "latents", "next_latents", "log_probs", "mock_flags"]:
+            samples[key] = samples[key][
+                torch.arange(batch_size).to(device)[:, None],
+                perms,
+            ]
+        samples_batched = {k: v.unsqueeze(1) for k, v in samples.items()}
+        samples_batched_list = [
+            dict(zip(samples_batched, x)) for x in zip(*samples_batched.values())
         ]
-    ).to(device) 
-    for key in ["timesteps", "latents", "next_latents", "log_probs", "mock_flags"]:
-        samples[key] = samples[key][
-            torch.arange(batch_size).to(device) [:, None],
-            perms,
-        ]
-    samples_batched = {
-        k: v.unsqueeze(1)
-        for k, v in samples.items()
-    }
-    # dict of lists -> list of dicts for easier iteration
-    samples_batched_list = [
-        dict(zip(samples_batched, x)) for x in zip(*samples_batched.values())
-    ]
-    train_timesteps = int(len(samples["timesteps"][0])*args.timestep_fraction)
-    for i,sample in list(enumerate(samples_batched_list)):
-        for _ in range(train_timesteps):
-            clip_range = args.clip_range
-            adv_clip_max = args.adv_clip_max
-            new_log_probs = grpo_one_step(
-                args,
-                sample["latents"][:,_],
-                sample["next_latents"][:,_],
-                sample["encoder_hidden_states"][:,:sample['original_length']],
-                sample["prompt_attention_masks"][:,:sample['original_length']],
-                sample["txt_seq_lens"],
-                [[(1, args.h // 8 // 2, args.w // 8// 2)]],
-                transformer,
-                sample["timesteps"][:,_],
-                perms[i][_],
-                sigma_schedule,
-            )
+        for i, sample in list(enumerate(samples_batched_list)):
+            for _ in range(train_timesteps):
+                clip_range = args.clip_range
+                adv_clip_max = args.adv_clip_max
+                new_log_probs = grpo_one_step(
+                    args,
+                    sample["latents"][:, _],
+                    sample["next_latents"][:, _],
+                    sample["encoder_hidden_states"][:, : sample["original_length"]],
+                    sample["prompt_attention_masks"][:, : sample["original_length"]],
+                    sample["txt_seq_lens"],
+                    [[(1, args.h // 8 // 2, args.w // 8 // 2)]],
+                    transformer,
+                    sample["timesteps"][:, _],
+                    perms[i][_],
+                    sigma_schedule,
+                )
 
-            advantages = torch.clamp(
-                sample["advantages"],
-                -adv_clip_max,
-                adv_clip_max,
-            )
+                advantages = torch.clamp(
+                    sample["advantages"],
+                    -adv_clip_max,
+                    adv_clip_max,
+                )
 
-            ratio = torch.exp(new_log_probs - sample["log_probs"][:,_])
+                ratio = torch.exp(new_log_probs - sample["log_probs"][:, _])
 
-            unclipped_loss = -advantages * ratio
-            clipped_loss = -advantages * torch.clamp(
-                ratio,
-                1.0 - clip_range,
-                1.0 + clip_range,
-            )
-            
-            # mock_flags: 1 = timestep used mocked/guessed velocity (no true transformer v at rollout).
-            # Default: downweight guess steps (0.1). With zero_loss_on_guess: exclude them from GRPO loss entirely.
-            if getattr(args, "zero_loss_on_guess", False):
-                loss_weight = 1.0 - sample["mock_flags"][:,_]
-            else:
-                loss_weight = 1.0 - 0.9 * sample["mock_flags"][:,_]
+                unclipped_loss = -advantages * ratio
+                clipped_loss = -advantages * torch.clamp(
+                    ratio,
+                    1.0 - clip_range,
+                    1.0 + clip_range,
+                )
 
-            loss = torch.mean(torch.maximum(unclipped_loss, clipped_loss) * loss_weight) / (args.gradient_accumulation_steps * train_timesteps)
+                loss_weight = 1.0 - 0.9 * sample["mock_flags"][:, _]
 
-            loss.backward()
-            avg_loss = loss.detach().clone()
-            dist.all_reduce(avg_loss, op=dist.ReduceOp.AVG)
-            total_loss += avg_loss.item()
-        if (i+1)%args.gradient_accumulation_steps==0:
-            grad_norm = transformer.clip_grad_norm_(max_grad_norm)
-            optimizer.step()
-            lr_scheduler.step()
-            optimizer.zero_grad()
-        if dist.get_rank()%8==0:
-            print("reward", sample["rewards"].item())
-            print("ratio", ratio)
-            print("advantage", sample["advantages"].item())
-            print("final loss", loss.item())
-        dist.barrier()
+                loss = torch.mean(
+                    torch.maximum(unclipped_loss, clipped_loss) * loss_weight
+                ) / (args.gradient_accumulation_steps * train_timesteps)
+
+                loss.backward()
+                avg_loss = loss.detach().clone()
+                dist.all_reduce(avg_loss, op=dist.ReduceOp.AVG)
+                total_loss += avg_loss.item()
+            if (i + 1) % args.gradient_accumulation_steps == 0:
+                grad_norm = transformer.clip_grad_norm_(max_grad_norm)
+                optimizer.step()
+                lr_scheduler.step()
+                optimizer.zero_grad()
+            if dist.get_rank() % 8 == 0:
+                print("reward", sample["rewards"].item())
+                print("ratio", ratio)
+                print("advantage", sample["advantages"].item())
+                print("final loss", loss.item())
+            dist.barrier()
     return total_loss, grad_norm.item(), avg_reward
 
 
@@ -1527,7 +1604,8 @@ if __name__ == "__main__":
         "--zero_loss_on_guess",
         action="store_true",
         default=False,
-        help="If set, GRPO PPO loss weight is 0 on timesteps where rollout used guessed/mock velocity (no grad from those steps).",
+        help="If set, training shuffles and updates only non-guess (infer) timesteps; guess steps are omitted from the update loop. "
+        "Loss per rollout is normalized by the number of those steps (min(timestep_fraction*T, num_infer)).",
     )
 
     args = parser.parse_args()
