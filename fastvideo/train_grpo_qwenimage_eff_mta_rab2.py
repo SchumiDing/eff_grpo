@@ -770,6 +770,12 @@ def _apply_rab2_preset(preset: str) -> None:
         _MTA_RAB2_C2 = -1.0
         _MTA_RAB2_RESIDUAL_BIAS = 0.15
         _MTA_RAB2_RESIDUAL_GROWTH = 1.20
+    elif preset == "b030":
+        _MTA_RAB2_EARLY_FRAC = 0.4
+        _MTA_RAB2_C1 = 2.0
+        _MTA_RAB2_C2 = -1.0
+        _MTA_RAB2_RESIDUAL_BIAS = 0.30
+        _MTA_RAB2_RESIDUAL_GROWTH = 1.35
     else:
         raise ValueError(f"unknown rab2_preset: {preset}")
 
@@ -1689,9 +1695,10 @@ if __name__ == "__main__":
         "--rab2_preset",
         type=str,
         default="default",
-        choices=["default", "tight"],
+        choices=["default", "tight", "b030"],
         help="Residual-AB2 rollout hyperparams. default keeps stronger AB2 residual extrapolation; "
-        "tight uses a smaller residual gate/radius for safer tail behavior.",
+        "tight uses a smaller residual gate/radius for safer tail behavior; "
+        "b030 increases residual bias to 0.30 while keeping growth=1.35.",
     )
     parser.add_argument(
         "--zero_loss_on_guess",

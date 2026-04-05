@@ -23,3 +23,10 @@ sample_reference_model_rab2_b020 = _rab2_wrap(0.4, 2.0, -1.0, 0.20, 1.35)
 
 # Slightly more aggressive than base: trust residual extrapolation a bit more.
 sample_reference_model_rab2_b030 = _rab2_wrap(0.4, 2.0, -1.0, 0.30, 1.35)
+
+# Continue exploring the "higher bias helps" direction near the current best.
+sample_reference_model_rab2_b035 = _rab2_wrap(0.4, 2.0, -1.0, 0.35, 1.35)
+sample_reference_model_rab2_b040 = _rab2_wrap(0.4, 2.0, -1.0, 0.40, 1.35)
+
+# Keep the stronger residual trust but allow a slightly looser residual norm cap.
+sample_reference_model_rab2_b030_g140 = _rab2_wrap(0.4, 2.0, -1.0, 0.30, 1.40)
