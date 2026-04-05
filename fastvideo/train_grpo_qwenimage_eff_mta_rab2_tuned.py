@@ -14,3 +14,12 @@ sample_reference_model_rab2_mid = _rab2_wrap(0.4, 2.0, -1.0, 0.20, 1.25)
 
 # More conservative: stronger shrink on rollout-specific residual magnitude.
 sample_reference_model_rab2_tight = _rab2_wrap(0.4, 2.0, -1.0, 0.15, 1.20)
+
+# Isolate "clip only": keep base bias but slightly tighten residual norm cap.
+sample_reference_model_rab2_g130 = _rab2_wrap(0.4, 2.0, -1.0, 0.25, 1.30)
+
+# Isolate "bias only": downweight extrapolated residual without changing cap.
+sample_reference_model_rab2_b020 = _rab2_wrap(0.4, 2.0, -1.0, 0.20, 1.35)
+
+# Slightly more aggressive than base: trust residual extrapolation a bit more.
+sample_reference_model_rab2_b030 = _rab2_wrap(0.4, 2.0, -1.0, 0.30, 1.35)

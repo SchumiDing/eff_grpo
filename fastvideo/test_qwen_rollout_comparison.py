@@ -65,6 +65,9 @@ from train_grpo_qwenimage_eff_mta_rab2 import sample_reference_model_rab2
 from train_grpo_qwenimage_eff_mta_rab2_tuned import (
     sample_reference_model_rab2_mid,
     sample_reference_model_rab2_tight,
+    sample_reference_model_rab2_g130,
+    sample_reference_model_rab2_b020,
+    sample_reference_model_rab2_b030,
 )
 from train_grpo_qwenimage_eff_mta_ab2_trust import sample_reference_model_ab2_trust
 from train_grpo_qwenimage_eff_oneach import run_sample_step as run_sample_step_oneach, flux_step, unpack_latents, pack_latents
@@ -182,6 +185,9 @@ def test_comparison():
         "rab2",
         "rab2_mid",
         "rab2_tight",
+        "rab2_g130",
+        "rab2_b020",
+        "rab2_b030",
         "ab2_trust",
         "oneach_14",
     ]
@@ -625,6 +631,9 @@ def test_comparison():
     move_rab2_batch_to_output = _move_ab2_ablate_batch_to_output("rab2")
     move_rab2_mid_batch_to_output = _move_ab2_ablate_batch_to_output("rab2_mid")
     move_rab2_tight_batch_to_output = _move_ab2_ablate_batch_to_output("rab2_tight")
+    move_rab2_g130_batch_to_output = _move_ab2_ablate_batch_to_output("rab2_g130")
+    move_rab2_b020_batch_to_output = _move_ab2_ablate_batch_to_output("rab2_b020")
+    move_rab2_b030_batch_to_output = _move_ab2_ablate_batch_to_output("rab2_b030")
     move_ab2_trust_batch_to_output = _move_ab2_ablate_batch_to_output("ab2_trust")
 
     def move_varguess_batch_to_output(
@@ -749,6 +758,9 @@ def test_comparison():
         "rab2": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
         "rab2_mid": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
         "rab2_tight": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
+        "rab2_g130": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
+        "rab2_b020": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
+        "rab2_b030": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
         "ab2_trust": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
         "oneach_14": {"rewards": [], "latents": [], "log_probs": [], "txt_seq_lens": []},
     }
@@ -815,6 +827,9 @@ def test_comparison():
             "rab2": ("METHOD 14: MTA RAB2 (group-centered residual AB2)", sample_reference_model_rab2, move_rab2_batch_to_output, True, args.sampling_steps),
             "rab2_mid": ("METHOD 14b: MTA RAB2-Mid (residual bias=0.20, growth=1.25)", sample_reference_model_rab2_mid, move_rab2_mid_batch_to_output, True, args.sampling_steps),
             "rab2_tight": ("METHOD 14c: MTA RAB2-Tight (residual bias=0.15, growth=1.20)", sample_reference_model_rab2_tight, move_rab2_tight_batch_to_output, True, args.sampling_steps),
+            "rab2_g130": ("METHOD 14d: MTA RAB2-G130 (bias=0.25, growth=1.30)", sample_reference_model_rab2_g130, move_rab2_g130_batch_to_output, True, args.sampling_steps),
+            "rab2_b020": ("METHOD 14e: MTA RAB2-B020 (bias=0.20, growth=1.35)", sample_reference_model_rab2_b020, move_rab2_b020_batch_to_output, True, args.sampling_steps),
+            "rab2_b030": ("METHOD 14f: MTA RAB2-B030 (bias=0.30, growth=1.35)", sample_reference_model_rab2_b030, move_rab2_b030_batch_to_output, True, args.sampling_steps),
             "ab2_trust": ("METHOD 15: MTA AB2-Trust (EMA group anchor + confidence trust region)", sample_reference_model_ab2_trust, move_ab2_trust_batch_to_output, True, args.sampling_steps),
         }
         
@@ -1351,6 +1366,9 @@ def test_comparison():
             "rab2": "MTA RAB2 (AB2 on rollout residual around current group mean)",
             "rab2_mid": "MTA RAB2-Mid (same residual AB2, bias=0.20, growth=1.25)",
             "rab2_tight": "MTA RAB2-Tight (same residual AB2, bias=0.15, growth=1.20)",
+            "rab2_g130": "MTA RAB2-G130 (same residual AB2, bias=0.25, growth=1.30)",
+            "rab2_b020": "MTA RAB2-B020 (same residual AB2, bias=0.20, growth=1.35)",
+            "rab2_b030": "MTA RAB2-B030 (same residual AB2, bias=0.30, growth=1.35)",
             "ab2_trust": "MTA AB2-Trust (strong AB2 + EMA group anchor + trust region)",
             "oneach_14": "Oneach (14 steps - Full Inference + Mean Correction)"
         }
