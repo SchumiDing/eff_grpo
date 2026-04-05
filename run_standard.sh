@@ -40,7 +40,7 @@ torchrun --nproc_per_node=8 --master_port 19003 \
     --eta 0.3 \
     --lr_warmup_steps 0 \
     --sampler_seed 12627 \
-    --max_grad_norm 1.0 \
+    --max_grad_norm 10.0 \
     --weight_decay 0.0001 \
     --use_hpsv2 \
     --num_generations 4 \
