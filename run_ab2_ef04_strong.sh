@@ -60,5 +60,4 @@ torchrun --nproc_per_node=8 --master_port 19004 \
     --clip_range 0.1 \
     --adv_clip_max 5.0 \
     --selective_checkpointing 0 \
-    --ab2_abl_preset ef04_strong \
-    --zero_loss_on_guess
+    --ab2_abl_preset ef04_strong 
