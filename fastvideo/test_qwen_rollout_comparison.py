@@ -14,6 +14,8 @@
 12. MTA ResAB: v_tgt + cos 加权 AB2 加速度项 (train_grpo_qwenimage_eff_mta_resab)
 13. MTA Line: v_tgt + cos 加权 (v_prev - v_prevprev) (train_grpo_qwenimage_eff_mta_line)
 14. MTA Heun: 前半段 0.5*(v_so + v_tgt) (train_grpo_qwenimage_eff_mta_heun)
+15. MTA RAB2: 对 rollout 残差 v - v_group 做强 AB2 外推，再回锚到当前 group mean (train_grpo_qwenimage_eff_mta_rab2)
+16. MTA AB2-Trust: 强 AB2 + smoothed group anchor + trust region 裁剪 (train_grpo_qwenimage_eff_mta_ab2_trust)
 """
 
 import torch
@@ -57,6 +59,8 @@ from train_grpo_qwenimage_eff_mta_varguess import sample_reference_model as samp
 from train_grpo_qwenimage_eff_mta_resab import sample_reference_model as sample_reference_model_resab
 from train_grpo_qwenimage_eff_mta_line import sample_reference_model as sample_reference_model_line
 from train_grpo_qwenimage_eff_mta_heun import sample_reference_model as sample_reference_model_heun
+from train_grpo_qwenimage_eff_mta_rab2 import sample_reference_model_rab2
+from train_grpo_qwenimage_eff_mta_ab2_trust import sample_reference_model_ab2_trust
 from train_grpo_qwenimage_eff_oneach import run_sample_step as run_sample_step_oneach, flux_step, unpack_latents, pack_latents
 
 def set_seed(seed):
@@ -110,7 +114,7 @@ def test_comparison():
     parser.add_argument("--end_idx", type=int, default=None, help="End index of embeddings to load (None means all)")
     parser.add_argument("--batch_size", type=int, default=10, help="Number of prompts per batch")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
-    parser.add_argument("--methods", type=str, nargs='+', default=["original", "original_14", "reuse", "auto", "d2", "alpha", "ab2", "ab2_2", "resab", "line", "heun"], 
+    parser.add_argument("--methods", type=str, nargs='+', default=["original", "original_14", "ab2_abl_ef04_strong", "reuse", "auto", "d2", "alpha", "ab2", "ab2_2", "rab2", "ab2_trust", "resab", "line", "heun"], 
                         help="Methods to run: ... ab2, ab2_2, ab2_abl_ef04, ab2_abl_ef06, ab2_abl_v1, ab2_abl_strong, varguess, ...")
     parser.add_argument("--fsdp_sharding_strategy", type=str, default="SHARD_GRAD_OP", help="FSDP sharding strategy")
     args = parser.parse_args()
@@ -169,6 +173,8 @@ def test_comparison():
         "resab",
         "line",
         "heun",
+        "rab2",
+        "ab2_trust",
         "oneach_14",
     ]
     methods_to_run = []
@@ -608,6 +614,8 @@ def test_comparison():
     move_ab2_abl_v1_batch_to_output = _move_ab2_ablate_batch_to_output("ab2_abl_v1")
     move_ab2_abl_strong_batch_to_output = _move_ab2_ablate_batch_to_output("ab2_abl_strong")
     move_ab2_abl_ef04_strong_batch_to_output = _move_ab2_ablate_batch_to_output("ab2_abl_ef04_strong")
+    move_rab2_batch_to_output = _move_ab2_ablate_batch_to_output("rab2")
+    move_ab2_trust_batch_to_output = _move_ab2_ablate_batch_to_output("ab2_trust")
 
     def move_varguess_batch_to_output(
         start_prompt_idx: int, batch_num_prompts: int, mock_flag_sums
@@ -728,6 +736,8 @@ def test_comparison():
         "resab": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
         "line": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
         "heun": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
+        "rab2": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
+        "ab2_trust": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
         "oneach_14": {"rewards": [], "latents": [], "log_probs": [], "txt_seq_lens": []},
     }
     
@@ -790,6 +800,8 @@ def test_comparison():
             "resab": ("METHOD 11: MTA ResAB (v_tgt + eta*(v_so-v_prev), eta from cosine)", sample_reference_model_resab, move_resab_batch_to_output, True, args.sampling_steps),
             "line": ("METHOD 12: MTA Line (v_tgt + w*(v_prev-v_pp), w from cosine)", sample_reference_model_line, move_line_batch_to_output, True, args.sampling_steps),
             "heun": ("METHOD 13: MTA Heun (early: 0.5*(v_so+v_tgt))", sample_reference_model_heun, move_heun_batch_to_output, True, args.sampling_steps),
+            "rab2": ("METHOD 14: MTA RAB2 (group-centered residual AB2)", sample_reference_model_rab2, move_rab2_batch_to_output, True, args.sampling_steps),
+            "ab2_trust": ("METHOD 15: MTA AB2-Trust (EMA group anchor + confidence trust region)", sample_reference_model_ab2_trust, move_ab2_trust_batch_to_output, True, args.sampling_steps),
         }
         
         if method == "oneach_14":
@@ -1280,6 +1292,17 @@ def test_comparison():
             for method in methods_to_run:
                 if method in rewards_cpu:
                     rewards_by_prompt[method].append(rewards_cpu[method][start_idx:end_idx])
+
+        prompt_mean_stats = {
+            method: np.array([vals.mean() for vals in rewards_by_prompt[method]])
+            for method in methods_to_run
+            if method in rewards_cpu
+        }
+        prompt_max_stats = {
+            method: np.array([vals.max() for vals in rewards_by_prompt[method]])
+            for method in methods_to_run
+            if method in rewards_cpu
+        }
         
         # 10. 生成详细对比报告
         print(f"\n{'='*80}")
@@ -1311,6 +1334,8 @@ def test_comparison():
             "resab": "MTA ResAB (mean-field v_tgt + cosine-weighted AB2 accel)",
             "line": "MTA Line (v_tgt + cosine-weighted velocity difference)",
             "heun": "MTA Heun (early: average of AB2 and v_tgt)",
+            "rab2": "MTA RAB2 (AB2 on rollout residual around current group mean)",
+            "ab2_trust": "MTA AB2-Trust (strong AB2 + EMA group anchor + trust region)",
             "oneach_14": "Oneach (14 steps - Full Inference + Mean Correction)"
         }
         
@@ -1348,13 +1373,19 @@ def test_comparison():
             # 如果有baseline（original），与其他方法比较
             if "original" in methods_to_run and "original" in rewards_cpu:
                 baseline_mean = rewards_cpu["original"].mean()
+                baseline_prompt_mean = prompt_mean_stats["original"]
+                baseline_prompt_max = prompt_max_stats["original"]
                 for method in methods_to_run:
                     if method != "original" and method in rewards_cpu:
                         diff = rewards_cpu[method].mean() - baseline_mean
                         improvement = (diff / abs(baseline_mean)) * 100 if baseline_mean != 0 else 0
+                        prompt_mean_drawdown = (baseline_prompt_mean - prompt_mean_stats[method]).mean()
+                        prompt_max_worse_frac = (prompt_max_stats[method] < baseline_prompt_max).mean()
                         print(f"  - {method_names[method]} vs Baseline:")
                         print(f"    * Difference: {diff:+.4f}")
                         print(f"    * Improvement: {improvement:+.2f}%")
+                        print(f"    * Prompt-mean drawdown: {prompt_mean_drawdown:+.4f}")
+                        print(f"    * Prompt-max below baseline frac: {prompt_max_worse_frac:.2%}")
             
             # 两两比较其他方法
             print(f"\n  Pairwise Comparisons:")
@@ -1405,10 +1436,16 @@ def test_comparison():
                 if method in rewards_cpu:
                     f.write(f"  HPSv2 Reward Mean: {rewards_cpu[method].mean():.4f}\n")
                     f.write(f"  HPSv2 Reward Std:  {rewards_cpu[method].std():.4f}\n")
+                    f.write(f"  Prompt Mean Avg:  {prompt_mean_stats[method].mean():.4f}\n")
+                    f.write(f"  Prompt Max Avg:   {prompt_max_stats[method].mean():.4f}\n")
                     if "original" in rewards_cpu and method != "original":
                         diff = rewards_cpu[method].mean() - rewards_cpu["original"].mean()
                         improvement = (diff / abs(rewards_cpu["original"].mean())) * 100 if rewards_cpu["original"].mean() != 0 else 0
+                        prompt_mean_drawdown = (prompt_mean_stats["original"] - prompt_mean_stats[method]).mean()
+                        prompt_max_worse_frac = (prompt_max_stats[method] < prompt_max_stats["original"]).mean()
                         f.write(f"  vs Baseline: {diff:+.4f} ({improvement:+.2f}%)\n")
+                        f.write(f"  Prompt-mean drawdown: {prompt_mean_drawdown:+.4f}\n")
+                        f.write(f"  Prompt-max below baseline frac: {prompt_max_worse_frac:.2%}\n")
                 f.write("\n")
         
         print(f"\n{'='*80}")

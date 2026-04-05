@@ -9,7 +9,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT"
 
-METHODS="${METHODS:-original original_14 ab2 ab2_2 alpha resab line heun d2 auto}"
+METHODS="${METHODS:-original original_14 ab2_abl_ef04_strong rab2 ab2_trust ab2 ab2_2 alpha resab line heun d2 auto}"
 OUT="${OUT:-./test_results_comparison_rl_embeddings_drawbench_mta_new}"
 
 EST_SEC="$(bash "$ROOT/scripts/drawbench_time_estimate.sh" "$METHODS")"
