@@ -47,7 +47,7 @@ torchrun --nproc_per_node=8 --master_port 19003 \
     --shift 3 \
     --use_group \
     --ignore_last \
-    --timestep_fraction 0.4 \
+    --timestep_fraction 0.6 \
     --init_same_noise \
     --clip_range 0.1 \
     --adv_clip_max 5.0 \
