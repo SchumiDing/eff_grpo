@@ -15,6 +15,7 @@
 13. MTA Line: v_tgt + cos 加权 (v_prev - v_prevprev) (train_grpo_qwenimage_eff_mta_line)
 14. MTA Heun: 前半段 0.5*(v_so + v_tgt) (train_grpo_qwenimage_eff_mta_heun)
 15. MTA RAB2: 对 rollout 残差 v - v_group 做强 AB2 外推，再回锚到当前 group mean (train_grpo_qwenimage_eff_mta_rab2)
+15b. MTA RAB2-Explorer: 同 RAB2 调度；早期融合按组内 ||residual_prev|| 秩分配 alpha_floor 与 growth (train_grpo_qwenimage_eff_mta_rab2_explorer)
 16. MTA RAB2-Mid: 更保守的 RAB2，缩小残差偏置与幅度上限 (train_grpo_qwenimage_eff_mta_rab2_tuned)
 17. MTA RAB2-Tight: 更强保守的 RAB2，进一步收缩 rollout 残差 (train_grpo_qwenimage_eff_mta_rab2_tuned)
 18. MTA AB2-Trust: 强 AB2 + smoothed group anchor + trust region 裁剪 (train_grpo_qwenimage_eff_mta_ab2_trust)
@@ -62,6 +63,7 @@ from train_grpo_qwenimage_eff_mta_resab import sample_reference_model as sample_
 from train_grpo_qwenimage_eff_mta_line import sample_reference_model as sample_reference_model_line
 from train_grpo_qwenimage_eff_mta_heun import sample_reference_model as sample_reference_model_heun
 from train_grpo_qwenimage_eff_mta_rab2 import sample_reference_model_rab2
+from train_grpo_qwenimage_eff_mta_rab2_explorer import sample_reference_model_rab2_explorer
 from train_grpo_qwenimage_eff_mta_rab2_tuned import (
     sample_reference_model_rab2_mid,
     sample_reference_model_rab2_tight,
@@ -126,8 +128,8 @@ def test_comparison():
     parser.add_argument("--end_idx", type=int, default=None, help="End index of embeddings to load (None means all)")
     parser.add_argument("--batch_size", type=int, default=10, help="Number of prompts per batch")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
-    parser.add_argument("--methods", type=str, nargs='+', default=["original", "original_14", "ab2_abl_ef04_strong", "reuse", "auto", "d2", "alpha", "ab2", "ab2_2", "rab2", "ab2_trust", "resab", "line", "heun"], 
-                        help="Methods to run: ... ab2, ab2_2, ab2_abl_ef04, ab2_abl_ef06, ab2_abl_v1, ab2_abl_strong, varguess, ...")
+    parser.add_argument("--methods", type=str, nargs='+', default=["original", "original_14", "ab2_abl_ef04_strong", "reuse", "auto", "d2", "alpha", "ab2", "ab2_2", "rab2", "rab2_explorer", "ab2_trust", "resab", "line", "heun"], 
+                        help="Methods to run: ... ab2, ab2_2, ab2_abl_ef04, ab2_abl_ef06, ab2_abl_v1, ab2_abl_strong, varguess, rab2_explorer, ...")
     parser.add_argument("--fsdp_sharding_strategy", type=str, default="SHARD_GRAD_OP", help="FSDP sharding strategy")
     args = parser.parse_args()
 
@@ -186,6 +188,7 @@ def test_comparison():
         "line",
         "heun",
         "rab2",
+        "rab2_explorer",
         "rab2_mid",
         "rab2_tight",
         "rab2_g130",
@@ -635,6 +638,7 @@ def test_comparison():
     move_ab2_abl_strong_batch_to_output = _move_ab2_ablate_batch_to_output("ab2_abl_strong")
     move_ab2_abl_ef04_strong_batch_to_output = _move_ab2_ablate_batch_to_output("ab2_abl_ef04_strong")
     move_rab2_batch_to_output = _move_ab2_ablate_batch_to_output("rab2")
+    move_rab2_explorer_batch_to_output = _move_ab2_ablate_batch_to_output("rab2_explorer")
     move_rab2_mid_batch_to_output = _move_ab2_ablate_batch_to_output("rab2_mid")
     move_rab2_tight_batch_to_output = _move_ab2_ablate_batch_to_output("rab2_tight")
     move_rab2_g130_batch_to_output = _move_ab2_ablate_batch_to_output("rab2_g130")
@@ -765,6 +769,7 @@ def test_comparison():
         "line": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
         "heun": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
         "rab2": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
+        "rab2_explorer": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
         "rab2_mid": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
         "rab2_tight": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
         "rab2_g130": {"rewards": [], "latents": [], "log_probs": [], "mock_flags": [], "txt_seq_lens": []},
@@ -837,6 +842,13 @@ def test_comparison():
             "line": ("METHOD 12: MTA Line (v_tgt + w*(v_prev-v_pp), w from cosine)", sample_reference_model_line, move_line_batch_to_output, True, args.sampling_steps),
             "heun": ("METHOD 13: MTA Heun (early: 0.5*(v_so+v_tgt))", sample_reference_model_heun, move_heun_batch_to_output, True, args.sampling_steps),
             "rab2": ("METHOD 14: MTA RAB2 (group-centered residual AB2)", sample_reference_model_rab2, move_rab2_batch_to_output, True, args.sampling_steps),
+            "rab2_explorer": (
+                "METHOD 14a: MTA RAB2-Explorer (rank-modulated residual bias / growth)",
+                sample_reference_model_rab2_explorer,
+                move_rab2_explorer_batch_to_output,
+                True,
+                args.sampling_steps,
+            ),
             "rab2_mid": ("METHOD 14b: MTA RAB2-Mid (residual bias=0.20, growth=1.25)", sample_reference_model_rab2_mid, move_rab2_mid_batch_to_output, True, args.sampling_steps),
             "rab2_tight": ("METHOD 14c: MTA RAB2-Tight (residual bias=0.15, growth=1.20)", sample_reference_model_rab2_tight, move_rab2_tight_batch_to_output, True, args.sampling_steps),
             "rab2_g130": ("METHOD 14d: MTA RAB2-G130 (bias=0.25, growth=1.30)", sample_reference_model_rab2_g130, move_rab2_g130_batch_to_output, True, args.sampling_steps),
@@ -1379,6 +1391,7 @@ def test_comparison():
             "line": "MTA Line (v_tgt + cosine-weighted velocity difference)",
             "heun": "MTA Heun (early: average of AB2 and v_tgt)",
             "rab2": "MTA RAB2 (AB2 on rollout residual around current group mean)",
+            "rab2_explorer": "MTA RAB2-Explorer (within-group rank of ||residual_prev|| -> alpha_floor & growth)",
             "rab2_mid": "MTA RAB2-Mid (same residual AB2, bias=0.20, growth=1.25)",
             "rab2_tight": "MTA RAB2-Tight (same residual AB2, bias=0.15, growth=1.20)",
             "rab2_g130": "MTA RAB2-G130 (same residual AB2, bias=0.25, growth=1.30)",

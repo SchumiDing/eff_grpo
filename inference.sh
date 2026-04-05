@@ -7,11 +7,10 @@ export HPSV2_ROOT=/home/dingruiyi/HPSv2
 export HF_HUB_OFFLINE=1
 
 export LD_LIBRARY_PATH=/usr/local/cuda-12.8/lib64:$LD_LIBRARY_PATH
-export RANK=0
 CKPT_PTH=$1
 echo "Evaluating $CKPT_PTH"
 
-python scripts/infer_qwen_dit_hpsv2_single_gpu.py \
+CUDA_VISIBLE_DEVICES=0,1 torchrun --standalone --nproc_per_node=2 scripts/infer_qwen_dit_hpsv2_single_gpu.py \
   --dit_checkpoint $CKPT_PTH \
   --base_model data/qwenimage \
   --embeddings_path data/qwenimage/rl_embeddings_drawbench \
@@ -19,5 +18,4 @@ python scripts/infer_qwen_dit_hpsv2_single_gpu.py \
   --hps_open_clip hps_ckpt/open_clip_pytorch_model.bin \
   --output_dir data/outputs/eval_drawbench_grpo_standard_ckpt201 \
   --batch_size 25 \
-  --sampling_steps 50 \
-  --device cuda:0
+  --sampling_steps 50
