@@ -61,7 +61,7 @@ import numpy as np
 from einops import rearrange
 import torch.distributed as dist
 from torch.nn import functional as F
-from typing import List
+from typing import List, Tuple
 from PIL import Image
 from fastvideo.utils.fsdp_util_qwenimage import fsdp_wrapper, FSDPConfig
 from contextlib import contextmanager
@@ -720,6 +720,46 @@ def _apply_ab2_abl_preset(preset: str) -> None:
         raise ValueError(f"unknown ab2_abl_preset: {preset}")
 
 
+def _batched_infer_shuffle_sel(
+    mock_flags: torch.Tensor, timestep_fraction: float
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Shuffle non-guess (infer) timesteps per batch row; take int(fraction * count) each.
+
+    Replaces a Python loop of ``where`` + ``randperm`` with one GPU-friendly ``argsort(B, T)``.
+    A custom Triton kernel is a poor fit here: typical ``T`` is small (dozens) and launch overhead
+    would dominate; PyTorch already fuses comparable sort/rand patterns well.
+
+    Returns
+    -------
+    sel : LongTensor (B, max_k)
+        For row ``b``, ``sel[b, :k[b]]`` is a random permutation of infer timestep indices.
+    k : LongTensor (B,)
+        Selected count per row (0 .. count inclusive).
+    """
+    device = mock_flags.device
+    B, T = mock_flags.shape
+    infer_mask = mock_flags < 0.5
+    counts = infer_mask.sum(dim=1)
+    # Match single-row fallback: if no infer slots, use all timestep indices.
+    if (counts == 0).any():
+        infer_mask = infer_mask | (counts.unsqueeze(1) == 0)
+        counts = infer_mask.sum(dim=1)
+
+    k = (counts.to(dtype=torch.float32) * timestep_fraction).long()
+    k = torch.minimum(k, counts)
+
+    noise = torch.rand(B, T, device=device, dtype=torch.float32)
+    inf = torch.tensor(float("inf"), device=device, dtype=torch.float32)
+    noise = torch.where(infer_mask, noise, inf)
+    perm = torch.argsort(noise, dim=-1)
+
+    max_k = int(k.max().item())
+    if max_k == 0:
+        return mock_flags.new_empty((B, 0), dtype=torch.long), k
+    sel = perm[:, :max_k].contiguous().long()
+    return sel, k
+
+
 def train_one_step(
     args,
     device,
@@ -818,25 +858,23 @@ def train_one_step(
 
     if getattr(args, "zero_loss_on_guess", False):
         # Shuffle only non-guess (infer) timesteps; skip mock steps in the update loop entirely.
-        T = samples["timesteps"].shape[1]
+        sel_all, k_tensor = _batched_infer_shuffle_sel(
+            samples["mock_flags"], float(args.timestep_fraction)
+        )
+        ol = samples["original_length"]
         train_entries = []
         for b in range(batch_size):
-            infer = torch.where(samples["mock_flags"][b] < 0.5)[0]
-            if infer.numel() == 0:
-                infer = torch.arange(T, device=device, dtype=torch.long)
-            order = infer[torch.randperm(infer.numel(), device=device)]
-            k = int(args.timestep_fraction * len(order))
-            sel = order[:k]
-            ol = samples["original_length"]
+            kb = int(k_tensor[b].item())
+            row_sel = sel_all[b, :kb]
             ol_b = ol[b : b + 1] if torch.is_tensor(ol) else ol
             train_entries.append(
                 {
-                    "latents": samples["latents"][b : b + 1, sel],
-                    "next_latents": samples["next_latents"][b : b + 1, sel],
-                    "timesteps": samples["timesteps"][b : b + 1, sel],
-                    "log_probs": samples["log_probs"][b : b + 1, sel],
-                    "sigma_indices": sel,
-                    "k": k,
+                    "latents": samples["latents"][b : b + 1, row_sel],
+                    "next_latents": samples["next_latents"][b : b + 1, row_sel],
+                    "timesteps": samples["timesteps"][b : b + 1, row_sel],
+                    "log_probs": samples["log_probs"][b : b + 1, row_sel],
+                    "sigma_indices": row_sel,
+                    "k": kb,
                     "advantages": samples["advantages"][b : b + 1],
                     "rewards": samples["rewards"][b : b + 1],
                     "encoder_hidden_states": samples["encoder_hidden_states"][b : b + 1],
