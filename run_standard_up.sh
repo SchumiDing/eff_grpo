@@ -17,12 +17,12 @@ torchrun --nproc_per_node=8 --master_port 19003 \
     --cache_dir data/.cache \
     --data_json_path data/qwenimage/rl_embeddings_prompts/videos2caption.json \
     --gradient_checkpointing \
-    --train_batch_size 32 \
+    --train_batch_size 8 \
     --num_latent_t 1 \
     --sp_size 1 \
     --train_sp_batch_size 2 \
     --dataloader_num_workers 4 \
-    --gradient_accumulation_steps 128 \
+    --gradient_accumulation_steps 8 \
     --max_train_steps 2000 \
     --learning_rate 1e-5 \
     --mixed_precision bf16 \
@@ -40,7 +40,7 @@ torchrun --nproc_per_node=8 --master_port 19003 \
     --max_grad_norm 10.0 \
     --weight_decay 0.0001 \
     --use_hpsv2 \
-    --num_generations 8 \
+    --num_generations 12 \
     --shift 3 \
     --use_group \
     --ignore_last \
