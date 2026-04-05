@@ -33,7 +33,7 @@ torchrun --nproc_per_node=8 --master_port 19005 \
     --max_train_steps 2000 \
     --learning_rate 1e-5 \
     --mixed_precision bf16 \
-    --checkpointing_steps 5 \
+    --checkpointing_steps 25 \
     --allow_tf32 \
     --cfg 0.0 \
     --output_dir "$OUT_DIR" \
