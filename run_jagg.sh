@@ -47,7 +47,7 @@ torchrun --nproc_per_node=8 --master_port 19003 \
     --max_grad_norm 10.0 \
     --weight_decay 0.0001 \
     --use_hpsv2 \
-    --num_generations 8 \
+    --num_generations 12 \
     --shift 3 \
     --use_group \
     --ignore_last \
@@ -56,4 +56,4 @@ torchrun --nproc_per_node=8 --master_port 19003 \
     --clip_range 0.1 \
     --adv_clip_max 5.0 \
     --selective_checkpointing 0.0 \
-    --sum_sample 5
+    --sum_sample 4
