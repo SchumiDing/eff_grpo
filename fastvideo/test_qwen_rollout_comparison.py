@@ -789,10 +789,12 @@ def test_comparison():
     # 这里将 all_captions 替换为 data_anno
     # 我们需要在 rank 0 收集所有的 rewards
     
+    original_same_compute_label = f"METHOD 1.5: Original ({eq_sampling_steps} Steps - Same Compute Baseline)"
+
     for method in methods_to_run:
         method_name_map = {
             "original": ("METHOD 1: Original (No Guess - Baseline)", sample_reference_model_original, move_original_batch_to_output, False, args.sampling_steps),
-            "original_14": ("METHOD 1.5: Original (14 Steps - Same Compute Baseline)", sample_reference_model_original, move_original_14_batch_to_output, False, eq_sampling_steps),
+            "original_14": (original_same_compute_label, sample_reference_model_original, move_original_14_batch_to_output, False, eq_sampling_steps),
             "mean_direction": ("METHOD 2: Mean Direction", sample_reference_model_mean, move_mean_batch_to_output, True, args.sampling_steps),
             "noise": ("METHOD 3: Random Noise", sample_reference_model_noise, move_noise_batch_to_output, True, args.sampling_steps),
             "momentum": ("METHOD 4: Momentum", sample_reference_model_momentum, move_momentum_batch_to_output, True, args.sampling_steps),
@@ -1371,7 +1373,7 @@ def test_comparison():
         
         method_names = {
             "original": "Original (No Guess - Baseline 20 steps)",
-            "original_14": "Original (14 steps - Same Compute)",
+            "original_14": f"Original ({eq_sampling_steps} steps - Same Compute)",
             "mean_direction": "Mean Direction",
             "noise": "Random Noise",
             "momentum": "Momentum (Mean Direction + Momentum 0.5)",
