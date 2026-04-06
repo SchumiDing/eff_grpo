@@ -13,7 +13,7 @@ export LD_LIBRARY_PATH=/usr/local/cuda-12.8/lib64:$LD_LIBRARY_PATH
 export RANK=0
 export WORLD_SIZE=8
 
-OUT_DIR=/dry-data/grpo_eff_mta_rab2_b030
+OUT_DIR=/dry-data/grpo_eff_len
 mkdir -p "$OUT_DIR"
 
 torchrun --nproc_per_node=8 --master_port 19005 \
@@ -29,7 +29,7 @@ torchrun --nproc_per_node=8 --master_port 19005 \
     --sp_size 1 \
     --train_sp_batch_size 2 \
     --dataloader_num_workers 4 \
-    --gradient_accumulation_steps 8 \
+    --gradient_accumulation_steps 12 \
     --max_train_steps 2000 \
     --learning_rate 1e-5 \
     --mixed_precision bf16 \
@@ -40,20 +40,20 @@ torchrun --nproc_per_node=8 --master_port 19005 \
     --h 720 \
     --w 720 \
     --t 1 \
-    --sampling_steps 20 \
+    --sampling_steps 40 \
     --eta 0.3 \
     --lr_warmup_steps 0 \
     --sampler_seed 12627 \
     --max_grad_norm 1.0 \
     --weight_decay 0.0001 \
     --use_hpsv2 \
-    --num_generations 12 \
-    --num_infer 8 \
+    --num_generations 8 \
+    --num_infer 4 \
     --num_guess 4 \
     --shift 3 \
     --use_group \
     --ignore_last \
-    --timestep_fraction 0.6 \
+    --timestep_fraction 0.3 \
     --init_same_noise \
     --clip_range 0.1 \
     --adv_clip_max 5.0 \
